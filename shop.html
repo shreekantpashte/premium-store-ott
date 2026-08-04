@@ -4,78 +4,293 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shop | PremiumStore</title>
+    <!-- Plus Jakarta Sans Font -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        :root {
+            /* Color Palette */
+            --bg-primary: #050816;
+            --bg-secondary: #0C1126;
+            --card-bg: rgba(16, 22, 48, 0.75);
+            --accent-purple: #7C3AED;
+            --accent-blue: #2563EB;
+            --text-light: #D4D7E5;
+            --text-muted: #8A90A2;
+            --border-color: rgba(255, 255, 255, 0.08);
+            
+            /* Gradients & Shadows */
+            --btn-gradient: linear-gradient(90deg, #7C3AED, #4F46E5);
+            --card-shadow: 0 10px 40px rgba(0,0,0,.35);
+            
+            /* Typography */
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background: 
+                radial-gradient(circle at top right, rgba(124,58,237,.12), transparent 40%),
+                radial-gradient(circle at bottom left, rgba(37,99,235,.12), transparent 40%),
+                var(--bg-primary);
+            color: #ffffff;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Glassmorphism Utilities */
+        .glass {
+            background: var(--card-bg);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid var(--border-color);
+        }
+
+        /* Navbar */
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            height: 82px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--text-light);
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover { color: #fff; }
+
+        /* Dropdown Styles */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+            padding: 20px 0;
+        }
+        
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: 60px;
+            left: 0;
+            min-width: 240px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            z-index: 100;
+            background: var(--card-bg);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid var(--border-color);
+        }
+        
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+        
+        .dropdown-content a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 20px;
+            margin: 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .dropdown-content a:hover {
+            background: rgba(124,58,237,0.2);
+            color: #fff;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: var(--btn-gradient);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(124,58,237,.45);
+            transition: transform 0.3s, opacity 0.3s;
+        }
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        .btn-full {
+            width: 100%;
+            margin-top: 15px;
+            padding: 12px;
+            font-size: 14px;
+        }
+
+        /* Page Layout */
+        .page-title {
+            text-align: center;
+            font-size: 42px;
+            margin-top: 80px;
+            margin-bottom: 40px;
+        }
+
+        /* Product Grid */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 24px;
+            max-width: 1320px;
+            margin: 0 auto;
+            padding: 0 20px 80px 20px;
+        }
+
+        .product-card {
+            border-radius: 20px;
+            padding: 18px;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .product-card:hover {
+            transform: translateY(-8px) scale(1.03);
+            border-color: rgba(124,58,237,.5);
+        }
+
+        .product-card h3 { font-size: 20px; margin: 15px 0 5px; }
+        .product-card p { color: var(--accent-purple); font-weight: 700; font-size: 20px; margin-top: 10px; }
+    </style>
 </head>
 <body>
+
+    <!-- Navbar -->
     <nav class="glass">
         <div style="font-size: 24px; font-weight: 800;">PremiumStore</div>
         <div class="nav-links">
             <a href="index.html">Home</a>
+            
+            <!-- Category Dropdown -->
             <div class="dropdown">
                 <a href="shop.html" style="cursor: pointer; color: white;">Shop ▾</a>
-                <div class="dropdown-content glass">
+                <div class="dropdown-content">
                     <a href="shop.html">All Products</a>
-                    <a href="shop.html?category=ott">OTT Platforms</a>
-                    <a href="shop.html?category=ai">AI Tools</a>
-                    <a href="shop.html?category=social">Social Media</a>
+                    <a href="shop.html?category=ott">🎬 OTT Subscriptions</a>
+                    <a href="shop.html?category=ai">🤖 AI Tools</a>
+                    <a href="shop.html?category=editing">🎨 Editing Tools</a>
+                    <a href="shop.html?category=education">🎓 Education & Career</a>
+                    <a href="shop.html?category=other">🛒 Other Plans</a>
+                    <a href="shop.html?category=bundles">📦 Digital Bundles</a>
                 </div>
             </div>
+            
             <a href="#">Support</a>
         </div>
-        <button class="btn-primary">Login</button>
+        <div>
+            <button class="btn-primary">Login</button>
+        </div>
     </nav>
 
+    <!-- Dynamic Page Title -->
     <h1 class="page-title" id="shop-title">All Products</h1>
-    <div class="product-grid" id="product-container"></div>
+    
+    <!-- Dynamic Products Section (Fetched from Supabase) -->
+    <div class="product-grid" id="product-container">
+        <!-- Products will be injected here by JavaScript -->
+    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
-        const supabase = supabase.createClient('https://YOUR_PROJECT_ID.supabase.co', 'YOUR_ANON_KEY');
+        // --- SUPABASE CONFIGURATION ---
+        const SUPABASE_URL = 'https://ognjizizksfapgnnwgld.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_O6_YMG5VN9PNyRUAkLn-vg_WWfPeJEb';
+        
+        // Initialize Supabase Client
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         async function loadShop() {
-            // Get category from URL (e.g., ?category=ott)
+            // 1. Get category from URL (e.g., ?category=ai)
             const urlParams = new URLSearchParams(window.location.search);
             const category = urlParams.get('category');
             
-            // Update Page Title
+            // 2. Update Page Title dynamically based on category
             const titleElement = document.getElementById('shop-title');
-            if (category === 'ott') titleElement.innerText = 'OTT Platforms';
-            if (category === 'ai') titleElement.innerText = 'AI Tools';
-            if (category === 'social') titleElement.innerText = 'Social Media';
+            if (category === 'ott') titleElement.innerText = '🎬 OTT Subscriptions';
+            else if (category === 'ai') titleElement.innerText = '🤖 AI Tools';
+            else if (category === 'editing') titleElement.innerText = '🎨 Editing Tools';
+            else if (category === 'education') titleElement.innerText = '🎓 Education & Career';
+            else if (category === 'other') titleElement.innerText = '🛒 Other Plans';
+            else if (category === 'bundles') titleElement.innerText = '📦 Digital Bundles';
+            else titleElement.innerText = 'All Products';
 
             const container = document.getElementById('product-container');
-            container.innerHTML = '<p style="text-align:center; width:100%;">Loading...</p>';
+            container.innerHTML = '<p style="text-align:center; width:100%; color: var(--text-muted);">Loading products...</p>';
 
-            // Build Supabase Query dynamically
+            // 3. Build Supabase Query dynamically
             let query = supabase.from('products').select('*');
+            
+            // If a category exists in the URL, filter the database by it
             if (category) {
-                query = query.eq('category', category); // Filter by category if it exists
+                query = query.eq('category', category); 
             }
 
+            // Fetch the data
             const { data, error } = await query;
 
-            container.innerHTML = '';
-            
-            if (data.length === 0) {
-                container.innerHTML = '<p style="text-align:center; width:100%;">No products found in this category.</p>';
+            // Handle errors
+            if (error) {
+                console.error('Error fetching products:', error);
+                container.innerHTML = '<p style="text-align:center; width:100%; color: #EF4444;">Failed to load products. Check console for details.</p>';
                 return;
             }
 
+            container.innerHTML = '';
+            
+            // Handle empty category results
+            if (data.length === 0) {
+                container.innerHTML = '<p style="text-align:center; width:100%; color: var(--text-muted);">No products found in this category yet.</p>';
+                return;
+            }
+
+            // 4. Render product cards
             data.forEach(product => {
-                container.innerHTML += `
-                    <div class="product-card glass">
+                const card = document.createElement('div');
+                card.className = 'product-card glass';
+                card.innerHTML = `
+                    <div>
                         <div style="height: 140px; background: rgba(0,0,0,0.5); border-radius: 12px; margin-bottom: 15px;"></div>
-                        <span style="background: var(--btn-gradient); padding: 4px 8px; border-radius: 8px; font-size: 12px; font-weight: bold;">Up to ${product.discount_percentage}% OFF</span>
+                        <span style="background: var(--btn-gradient); padding: 4px 8px; border-radius: 8px; font-size: 12px; font-weight: bold; display: inline-block;">
+                            Up to ${product.discount_percentage || 0}% OFF
+                        </span>
                         <h3>${product.title}</h3>
-                        <p>₹${product.price} <span style="font-size: 14px; text-decoration: line-through; color: var(--text-muted);">₹${product.old_price}</span></p>
-                        <button class="btn-primary" style="width: 100%; margin-top: 15px;">Add to Cart</button>
-                    </div>`;
+                    </div>
+                    <div>
+                        <p>₹${product.price} <span style="font-size: 14px; text-decoration: line-through; color: var(--text-muted);">₹${product.old_price || ''}</span></p>
+                        <button class="btn-primary btn-full">Add to Cart</button>
+                    </div>
+                `;
+                container.appendChild(card);
             });
         }
         
-        // Don't forget to replace YOUR_PROJECT_ID and YOUR_ANON_KEY before uncommenting this
-        // loadShop();
+        // Execute on page load
+        loadShop();
     </script>
 </body>
 </html>
