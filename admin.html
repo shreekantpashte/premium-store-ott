@@ -4,194 +4,337 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard | PremiumStore</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="styles.css">
     
     <style>
-        .admin-container {
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 40px;
-            border-radius: 24px;
+        :root {
+            --bg-body: #F4F7FE;
+            --bg-sidebar: #FFFFFF;
+            --bg-card: #FFFFFF;
+            --primary: #2563EB;
+            --text-main: #111827;
+            --text-muted: #6B7280;
+            --border: #E5E7EB;
+            --sidebar-w: 260px;
+            font-family: 'Inter', sans-serif;
         }
 
-        .admin-header {
-            font-size: 28px;
-            font-weight: 800;
-            margin-bottom: 30px;
-            text-align: center;
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background-color: var(--bg-body); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+
+        /* --- Auth View --- */
+        #auth-view {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-body); display: flex; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .login-card {
+            background: white; padding: 40px; border-radius: 16px; width: 100%; max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); text-align: center;
+        }
+        .login-card h2 { margin-bottom: 24px; font-weight: 700; }
+        .login-card input {
+            width: 100%; padding: 12px; margin-bottom: 16px; border: 1px solid var(--border);
+            border-radius: 8px; font-size: 14px; outline: none;
+        }
+        .login-card button {
+            width: 100%; padding: 12px; background: var(--primary); color: white;
+            border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+        }
+        .error-msg { color: #EF4444; font-size: 14px; margin-bottom: 16px; display: none; }
+
+        /* --- App Layout --- */
+        #app-view { display: none; width: 100%; height: 100%; }
+        
+        /* Sidebar */
+        aside {
+            width: var(--sidebar-w); background: var(--bg-sidebar); border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; padding: 24px 16px;
+        }
+        .brand { font-size: 18px; font-weight: 700; color: var(--text-main); margin-bottom: 40px; padding: 0 12px; }
+        .brand span { font-size: 12px; font-weight: 400; color: var(--text-muted); }
+        .nav-menu { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+        .nav-item {
+            padding: 12px 16px; border-radius: 8px; color: var(--text-muted); text-decoration: none;
+            font-weight: 500; font-size: 15px; cursor: pointer; transition: 0.2s;
+        }
+        .nav-item:hover { background: #F3F4F6; color: var(--text-main); }
+        .nav-item.active { background: var(--primary); color: white; }
+        .nav-footer { border-top: 1px solid var(--border); padding-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+        .nav-footer .nav-item { color: var(--text-muted); }
+        .nav-footer .logout { color: #EF4444; }
+
+        /* Main Content */
+        main { flex: 1; padding: 32px 40px; overflow-y: auto; }
+        .page-header { margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; }
+        .page-title { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+        .page-subtitle { color: var(--text-muted); font-size: 14px; }
+
+        /* Cards */
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 24px; }
+        .stat-card {
+            background: var(--bg-card); padding: 24px; border-radius: 12px;
+            border: 1px solid var(--border); display: flex; align-items: center; gap: 16px;
+        }
+        .stat-card h3 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+        .stat-card p { font-size: 13px; color: var(--text-muted); }
+        
+        .info-banner {
+            background: #EFF6FF; border: 1px solid #BFDBFE; padding: 16px 20px;
+            border-radius: 12px; margin-bottom: 32px; font-size: 14px; color: #1E3A8A;
         }
 
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
+        /* Tables */
+        .table-container { background: white; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+        .table-header-bar { padding: 16px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background: #F9FAFB; padding: 16px 24px; font-size: 12px; font-weight: 600; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+        td { padding: 16px 24px; border-bottom: 1px solid var(--border); font-size: 14px; vertical-align: middle; }
+        .product-cell { display: flex; align-items: center; gap: 12px; font-weight: 500; }
+        .product-cell img { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; background: #eee; }
+        .status-badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; background: #D1FAE5; color: #065F46; }
+        .strike { text-decoration: line-through; color: var(--text-muted); font-size: 12px; margin-left: 6px; }
 
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .form-group.full-width {
-            grid-column: span 2;
-        }
-
-        label {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-light);
-        }
-
-        input, select, textarea {
-            background: rgba(0, 0, 0, 0.2);
-            border: 1px solid var(--border-color);
-            color: white;
-            padding: 14px 16px;
-            border-radius: 12px;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-size: 15px;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-
-        input:focus, select:focus, textarea:focus {
-            border-color: var(--accent-purple);
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 100px;
-        }
-
-        .helper-text {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-top: -4px;
-        }
-
-        .btn-submit {
-            width: 100%;
-            margin-top: 20px;
-            padding: 16px;
-            font-size: 16px;
-            border-radius: 12px;
+        /* Buttons & Forms */
+        .btn-primary { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+        input[type="text"], input[type="number"], select, textarea {
+            width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-family: 'Inter'; outline: none; margin-top: 6px;
         }
         
-        .loading-spinner {
-            display: none;
-            font-weight: bold;
-            text-align: center;
-            margin-top: 15px;
-            color: var(--accent-purple);
-        }
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; justify-content: center; align-items: center; }
+        .modal-content { background: white; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; border-radius: 12px; padding: 32px; }
+        .modal-header { display: flex; justify-content: space-between; margin-bottom: 24px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+        .form-group.full { grid-column: span 2; }
+        .helper-text { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+        /* Settings Tabs */
+        .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+        .tab { padding: 12px 24px; cursor: pointer; color: var(--text-muted); font-weight: 500; border-bottom: 2px solid transparent; }
+        .tab.active { color: var(--text-main); border-bottom-color: var(--primary); }
+
+        /* Utilities */
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-    <!-- Navbar -->
-    <nav class="glass">
-        <div style="font-size: 24px; font-weight: 800;">PremiumStore Admin</div>
-        <div class="nav-links">
-            <a href="index.html">View Live Site</a>
+    <!-- AUTHENTICATION VIEW -->
+    <div id="auth-view">
+        <div class="login-card">
+            <h2>Admin Login</h2>
+            <div id="login-error" class="error-msg">Invalid email or password</div>
+            <input type="email" id="email" placeholder="Admin Email">
+            <input type="password" id="password" placeholder="Password">
+            <button onclick="handleLogin()" id="login-btn">Sign In</button>
         </div>
-    </nav>
+    </div>
 
-    <!-- Admin Form -->
-    <div class="admin-container glass">
-        <div class="admin-header">Add New Product</div>
-        
-        <form id="product-form">
-            <div class="form-grid">
-                
-                <!-- Product Name -->
-                <div class="form-group full-width">
-                    <label>Product Name</label>
-                    <input type="text" id="title" required placeholder="e.g., Prime Video 6 Months">
-                </div>
-
-                <!-- Category -->
-                <div class="form-group">
-                    <label>Category</label>
-                    <select id="category" required>
-                        <option value="" disabled selected>Select category</option>
-                        <option value="ott">OTT Subscriptions</option>
-                        <option value="ai">AI Tools</option>
-                        <option value="editing">Editing Tools</option>
-                        <option value="education">Education & Career</option>
-                        <option value="other">Other Plans</option>
-                        <option value="bundles">Digital Bundles</option>
-                    </select>
-                </div>
-
-                <!-- Validity -->
-                <div class="form-group">
-                    <label>Validity</label>
-                    <input type="text" id="validity" required placeholder="e.g., 1 Year, Lifetime">
-                </div>
-
-                <!-- Offer Price -->
-                <div class="form-group">
-                    <label>Offer Price (₹)</label>
-                    <input type="number" id="price" required placeholder="e.g., 599">
-                </div>
-
-                <!-- MRP -->
-                <div class="form-group">
-                    <label>MRP (₹)</label>
-                    <input type="number" id="old_price" required placeholder="e.g., 1499">
-                </div>
-
-                <!-- Delivery Time -->
-                <div class="form-group">
-                    <label>Delivery Time</label>
-                    <input type="text" id="delivery_time" required placeholder="e.g., 5-30 Minutes">
-                </div>
-
-                <!-- Warranty -->
-                <div class="form-group">
-                    <label>Warranty</label>
-                    <input type="text" id="warranty" required placeholder="e.g., 6 Months Replacement">
-                </div>
-
-                <!-- Activation Method -->
-                <div class="form-group full-width">
-                    <label>Activation Method</label>
-                    <input type="text" id="activation_method" required placeholder="e.g., Account credentials, License key">
-                </div>
-
-                <!-- Pointer Features -->
-                <div class="form-group full-width">
-                    <label>Pointer Features (Comma Separated)</label>
-                    <input type="text" id="features" placeholder="Personal Account, No Password Sharing, 4K Quality">
-                    <span class="helper-text">These will appear as tick marks on the product page.</span>
-                </div>
-
-                <!-- Trust Factors -->
-                <div class="form-group full-width">
-                    <label>Trust Factors (Comma Separated)</label>
-                    <input type="text" id="trust_factors" placeholder="100% Genuine, Secure Payment, 24/7 Support">
-                    <span class="helper-text">Icons shown securely under the buy button.</span>
-                </div>
-
-                <!-- Image Upload (Max 1MB) -->
-                <div class="form-group full-width">
-                    <label>Product Image (Max 1 MB)</label>
-                    <input type="file" id="image_file" accept="image/png, image/jpeg, image/webp" required>
-                </div>
-
-                <!-- Description -->
-                <div class="form-group full-width">
-                    <label>Description</label>
-                    <textarea id="description" required placeholder="Enter detailed product description..."></textarea>
-                </div>
+    <!-- MAIN APP VIEW -->
+    <div id="app-view">
+        <!-- Sidebar -->
+        <aside>
+            <div class="brand">PremiumStore<br><span>Admin Panel</span></div>
+            <div class="nav-menu">
+                <a class="nav-item active" onclick="navigate('dashboard')" id="nav-dashboard">Dashboard</a>
+                <a class="nav-item" onclick="navigate('products')" id="nav-products">Products</a>
+                <a class="nav-item" onclick="navigate('settings')" id="nav-settings">Settings</a>
             </div>
+            <div class="nav-footer">
+                <a href="index.html" target="_blank" class="nav-item">View Store ↗</a>
+                <a class="nav-item logout" onclick="handleLogout()">Sign Out</a>
+            </div>
+        </aside>
 
-            <button type="submit" class="btn-primary btn-submit" id="submit-btn">Publish Product</button>
-            <div class="loading-spinner" id="loading-msg">Uploading product... Please wait.</div>
-        </form>
+        <!-- Main Content Area -->
+        <main>
+            <!-- DASHBOARD SECTION -->
+            <section id="sec-dashboard">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Dashboard</h1>
+                        <p class="page-subtitle">Welcome back to your admin panel</p>
+                    </div>
+                </div>
+
+                <div class="grid-3">
+                    <div class="stat-card">
+                        <div>
+                            <h3 id="stat-total">0</h3>
+                            <p>Total Products</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div>
+                            <h3 id="stat-active">0</h3>
+                            <p>Active Products</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div>
+                            <h3>Via Chat</h3>
+                            <p>WhatsApp Orders</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-banner">
+                    <strong>ⓘ WhatsApp-Based Orders</strong><br>
+                    All orders are processed through WhatsApp. When customers click "Buy Now", they are redirected to WhatsApp with a pre-filled order message. Track conversations in your WhatsApp Business app.
+                </div>
+
+                <h3 style="margin-bottom: 16px;">Recent Products</h3>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dashboard-table-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- PRODUCTS SECTION -->
+            <section id="sec-products" class="hidden">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Products</h1>
+                        <p class="page-subtitle">Manage your product catalog</p>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header-bar">
+                        <input type="text" placeholder="Search products..." style="width: 300px; margin:0;" id="search-input">
+                        <button class="btn-primary" onclick="document.getElementById('product-modal').style.display='flex'">+ Add Product</button>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Category</th>
+                                <th>Price</th>
+                                <th>Validity</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="products-table-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- SETTINGS SECTION -->
+            <section id="sec-settings" class="hidden">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Settings</h1>
+                        <p class="page-subtitle">Manage site policies and settings</p>
+                    </div>
+                </div>
+
+                <div class="table-container" style="padding: 0;">
+                    <div class="tabs">
+                        <div class="tab active">Refund & Replacement</div>
+                        <div class="tab">Privacy Policy</div>
+                        <div class="tab">Terms & Conditions</div>
+                    </div>
+                    <div style="padding: 24px;">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:16px;">
+                            <strong>Refund & Replacement</strong>
+                            <button class="btn-primary" style="padding: 6px 16px;">Save Changes</button>
+                        </div>
+                        <textarea style="height: 300px; font-family: monospace; font-size:13px;">
+## Refund & Replacement Policy
+
+### No Refunds After Activation
+Once a subscription or digital product has been successfully activated and delivered, no refunds will be issued.
+
+### Replacement Policy
+If your account or subscription doesn't work as expected:
+- Contact us within 3 days of purchase
+- Provide proof of the issue (screenshots/videos)
+- We will provide a replacement or store credit
+                        </textarea>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- ADD PRODUCT MODAL -->
+    <div id="product-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Product</h2>
+                <button style="border:none; background:none; font-size:20px; cursor:pointer;" onclick="closeModal()">×</button>
+            </div>
+            
+            <form id="product-form">
+                <div class="form-grid">
+                    <div class="form-group full">
+                        <label>Product Name</label>
+                        <input type="text" id="title" required placeholder="e.g., Prime Video 6 Months">
+                    </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select id="category" required>
+                            <option value="ott">OTT Subscriptions</option>
+                            <option value="ai">AI Tools</option>
+                            <option value="editing">Editing Tools</option>
+                            <option value="education">Education & Career</option>
+                            <option value="other">Other Plans</option>
+                            <option value="bundles">Digital Bundles</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Validity</label>
+                        <input type="text" id="validity" required placeholder="e.g., 1 Year, 6 Months">
+                    </div>
+                    <div class="form-group">
+                        <label>Offer Price (₹)</label>
+                        <input type="number" id="price" required>
+                    </div>
+                    <div class="form-group">
+                        <label>MRP (₹)</label>
+                        <input type="number" id="old_price" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Delivery Time</label>
+                        <input type="text" id="delivery_time" required placeholder="e.g., 5-30 Minutes">
+                    </div>
+                    <div class="form-group">
+                        <label>Activation Method</label>
+                        <input type="text" id="activation_method" required placeholder="e.g., Personal Account">
+                    </div>
+                    <div class="form-group full">
+                        <label>Pointer Features (Comma Separated)</label>
+                        <input type="text" id="features" placeholder="No Password Sharing, 4K Quality, All Devices Supported">
+                        <div class="helper-text">Appears as tick marks on the product page.</div>
+                    </div>
+                    <div class="form-group full">
+                        <label>Trust Factors (Comma Separated)</label>
+                        <input type="text" id="trust_factors" placeholder="100% Genuine, Secure Payment, 24/7 Support">
+                    </div>
+                    <div class="form-group full">
+                        <label>Product Image (Max 1 MB)</label>
+                        <input type="file" id="image_file" accept="image/png, image/jpeg, image/webp" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%;" id="submit-btn">Publish Product</button>
+            </form>
+        </div>
     </div>
 
     <script>
@@ -200,96 +343,186 @@
         const SUPABASE_ANON_KEY = 'sb_publishable_O6_YMG5VN9PNyRUAkLn-vg_WWfPeJEb';
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        // --- AUTHENTICATION LOGIC ---
+        async function checkSession() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                document.getElementById('auth-view').style.display = 'none';
+                document.getElementById('app-view').style.display = 'flex';
+                loadDashboardData();
+            } else {
+                document.getElementById('auth-view').style.display = 'flex';
+                document.getElementById('app-view').style.display = 'none';
+            }
+        }
+
+        async function handleLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('login-btn');
+            const errorMsg = document.getElementById('login-error');
+            
+            btn.disabled = true;
+            btn.innerText = 'Signing In...';
+            errorMsg.style.display = 'none';
+
+            const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+            if (error) {
+                errorMsg.innerText = error.message;
+                errorMsg.style.display = 'block';
+                btn.disabled = false;
+                btn.innerText = 'Sign In';
+            } else {
+                checkSession();
+            }
+        }
+
+        async function handleLogout() {
+            await supabase.auth.signOut();
+            window.location.reload();
+        }
+
+        // --- NAVIGATION LOGIC ---
+        function navigate(section) {
+            // Update Active Nav Item
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('nav-' + section).classList.add('active');
+            
+            // Toggle Sections
+            document.getElementById('sec-dashboard').classList.add('hidden');
+            document.getElementById('sec-products').classList.add('hidden');
+            document.getElementById('sec-settings').classList.add('hidden');
+            
+            document.getElementById('sec-' + section).classList.remove('hidden');
+
+            if (section === 'products' || section === 'dashboard') {
+                loadDashboardData();
+            }
+        }
+
+        // --- DATA FETCHING & RENDERING ---
+        async function loadDashboardData() {
+            const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+            if (error) return console.error(error);
+
+            document.getElementById('stat-total').innerText = data.length;
+            document.getElementById('stat-active').innerText = data.length; // Assuming all are active for now
+
+            renderTable('dashboard-table-body', data.slice(0, 5), true);
+            renderTable('products-table-body', data, false);
+        }
+
+        function renderTable(tbodyId, data, isDashboard) {
+            const tbody = document.getElementById(tbodyId);
+            tbody.innerHTML = '';
+            
+            data.forEach(product => {
+                const tr = document.createElement('tr');
+                if (isDashboard) {
+                    tr.innerHTML = `
+                        <td class="product-cell">
+                            <img src="${product.image_url || 'https://via.placeholder.com/40'}" alt="">
+                            ${product.title}
+                        </td>
+                        <td style="text-transform: capitalize;">${product.category}</td>
+                        <td>₹${product.price}</td>
+                        <td><span class="status-badge">Active</span></td>
+                    `;
+                } else {
+                    tr.innerHTML = `
+                        <td class="product-cell">
+                            <img src="${product.image_url || 'https://via.placeholder.com/40'}" alt="">
+                            ${product.title}
+                        </td>
+                        <td style="text-transform: capitalize;">${product.category}</td>
+                        <td>₹${product.price} <span class="strike">₹${product.old_price}</span></td>
+                        <td>${product.validity || 'N/A'}</td>
+                        <td><span class="status-badge">In Stock</span></td>
+                        <td style="cursor:pointer; color:red;" onclick="deleteProduct('${product.id}')">Delete</td>
+                    `;
+                }
+                tbody.appendChild(tr);
+            });
+        }
+
+        // --- ADD PRODUCT LOGIC ---
+        function closeModal() {
+            document.getElementById('product-modal').style.display = 'none';
+            document.getElementById('product-form').reset();
+        }
+
         document.getElementById('product-form').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            const submitBtn = document.getElementById('submit-btn');
-            const loadingMsg = document.getElementById('loading-msg');
-            
-            // Disable button and show loading
-            submitBtn.disabled = true;
-            submitBtn.style.opacity = '0.5';
-            loadingMsg.style.display = 'block';
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true;
+            btn.innerText = 'Publishing...';
 
             try {
-                // 1. Handle File Upload
                 const fileInput = document.getElementById('image_file');
                 const file = fileInput.files[0];
                 
+                // Max 1MB verification
                 if (file.size > 1024 * 1024) {
-                    alert("Error: Image size exceeds 1MB limit.");
-                    resetFormState();
-                    return;
+                    throw new Error("Image size exceeds 1MB limit.");
                 }
 
-                // Generate a unique file name
                 const fileExt = file.name.split('.').pop();
-                const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+                const fileName = `${Date.now()}.${fileExt}`;
 
-                // Upload to Supabase Storage ('product-images' bucket)
-                const { error: uploadError } = await supabase.storage
-                    .from('product-images')
-                    .upload(`public/${fileName}`, file);
-
+                // Upload image
+                const { error: uploadError } = await supabase.storage.from('product-images').upload(`public/${fileName}`, file);
                 if (uploadError) throw uploadError;
 
-                // Get Public URL of the uploaded image
-                const { data: publicUrlData } = supabase.storage
-                    .from('product-images')
-                    .getPublicUrl(`public/${fileName}`);
-                
+                const { data: publicUrlData } = supabase.storage.from('product-images').getPublicUrl(`public/${fileName}`);
                 const imageUrl = publicUrlData.publicUrl;
 
-                // 2. Gather text inputs
+                // Prepare Data
                 const price = parseFloat(document.getElementById('price').value);
                 const old_price = parseFloat(document.getElementById('old_price').value);
-                
-                // Auto-calculate discount percentage
-                const discount_percentage = Math.round(((old_price - price) / old_price) * 100);
+                const discount = Math.round(((old_price - price) / old_price) * 100);
 
-                // Convert comma-separated strings to arrays
-                const featuresArray = document.getElementById('features').value.split(',').map(item => item.trim()).filter(i => i);
-                const trustFactorsArray = document.getElementById('trust_factors').value.split(',').map(item => item.trim()).filter(i => i);
+                const features = document.getElementById('features').value.split(',').map(i => i.trim()).filter(i => i);
+                const trust = document.getElementById('trust_factors').value.split(',').map(i => i.trim()).filter(i => i);
 
-                // 3. Insert Database Record
-                const { error: dbError } = await supabase
-                    .from('products')
-                    .insert([
-                        {
-                            title: document.getElementById('title').value,
-                            category: document.getElementById('category').value,
-                            validity: document.getElementById('validity').value,
-                            price: price,
-                            old_price: old_price,
-                            discount_percentage: discount_percentage,
-                            delivery_time: document.getElementById('delivery_time').value,
-                            warranty: document.getElementById('warranty').value,
-                            activation_method: document.getElementById('activation_method').value,
-                            features: featuresArray,
-                            trust_factors: trustFactorsArray,
-                            description: document.getElementById('description').value,
-                            image_url: imageUrl
-                        }
-                    ]);
+                // Insert to DB
+                const { error: dbError } = await supabase.from('products').insert([{
+                    title: document.getElementById('title').value,
+                    category: document.getElementById('category').value,
+                    validity: document.getElementById('validity').value,
+                    price: price,
+                    old_price: old_price,
+                    discount_percentage: discount,
+                    delivery_time: document.getElementById('delivery_time').value,
+                    activation_method: document.getElementById('activation_method').value,
+                    features: features,
+                    trust_factors: trust,
+                    image_url: imageUrl
+                }]);
 
                 if (dbError) throw dbError;
 
                 alert('Product added successfully!');
-                document.getElementById('product-form').reset();
+                closeModal();
+                loadDashboardData();
 
             } catch (error) {
-                console.error(error);
-                alert('An error occurred: ' + error.message);
+                alert(error.message);
             } finally {
-                resetFormState();
-            }
-
-            function resetFormState() {
-                submitBtn.disabled = false;
-                submitBtn.style.opacity = '1';
-                loadingMsg.style.display = 'none';
+                btn.disabled = false;
+                btn.innerText = 'Publish Product';
             }
         });
+
+        async function deleteProduct(id) {
+            if(confirm("Are you sure you want to delete this product?")) {
+                await supabase.from('products').delete().eq('id', id);
+                loadDashboardData();
+            }
+        }
+
+        // Initialize Check
+        checkSession();
     </script>
 </body>
 </html>
