@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop | PremiumStore</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="glass">
+        <div style="font-size: 24px; font-weight: 800;">PremiumStore</div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <div class="dropdown">
+                <a href="shop.html" style="cursor: pointer; color: white;">Shop ▾</a>
+                <div class="dropdown-content glass">
+                    <a href="shop.html">All Products</a>
+                    <a href="shop.html?category=ott">OTT Platforms</a>
+                    <a href="shop.html?category=ai">AI Tools</a>
+                    <a href="shop.html?category=social">Social Media</a>
+                </div>
+            </div>
+            <a href="#">Support</a>
+        </div>
+        <button class="btn-primary">Login</button>
+    </nav>
+
+    <h1 class="page-title" id="shop-title">All Products</h1>
+    <div class="product-grid" id="product-container"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const supabase = supabase.createClient('https://YOUR_PROJECT_ID.supabase.co', 'YOUR_ANON_KEY');
+
+        async function loadShop() {
+            // Get category from URL (e.g., ?category=ott)
+            const urlParams = new URLSearchParams(window.location.search);
+            const category = urlParams.get('category');
+            
+            // Update Page Title
+            const titleElement = document.getElementById('shop-title');
+            if (category === 'ott') titleElement.innerText = 'OTT Platforms';
+            if (category === 'ai') titleElement.innerText = 'AI Tools';
+            if (category === 'social') titleElement.innerText = 'Social Media';
+
+            const container = document.getElementById('product-container');
+            container.innerHTML = '<p style="text-align:center; width:100%;">Loading...</p>';
+
+            // Build Supabase Query dynamically
+            let query = supabase.from('products').select('*');
+            if (category) {
+                query = query.eq('category', category); // Filter by category if it exists
+            }
+
+            const { data, error } = await query;
+
+            container.innerHTML = '';
+            
+            if (data.length === 0) {
+                container.innerHTML = '<p style="text-align:center; width:100%;">No products found in this category.</p>';
+                return;
+            }
+
+            data.forEach(product => {
+                container.innerHTML += `
+                    <div class="product-card glass">
+                        <div style="height: 140px; background: rgba(0,0,0,0.5); border-radius: 12px; margin-bottom: 15px;"></div>
+                        <span style="background: var(--btn-gradient); padding: 4px 8px; border-radius: 8px; font-size: 12px; font-weight: bold;">Up to ${product.discount_percentage}% OFF</span>
+                        <h3>${product.title}</h3>
+                        <p>₹${product.price} <span style="font-size: 14px; text-decoration: line-through; color: var(--text-muted);">₹${product.old_price}</span></p>
+                        <button class="btn-primary" style="width: 100%; margin-top: 15px;">Add to Cart</button>
+                    </div>`;
+            });
+        }
+        
+        // Don't forget to replace YOUR_PROJECT_ID and YOUR_ANON_KEY before uncommenting this
+        // loadShop();
+    </script>
+</body>
+</html>
