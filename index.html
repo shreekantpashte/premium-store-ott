@@ -4,118 +4,301 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PremiumStore | OTT & AI Subscriptions</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Plus Jakarta Sans Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
         :root {
-            --bg-primary: #050816; --bg-secondary: #0C1126; --card-bg: rgba(16, 22, 48, 0.75);
-            --accent-purple: #7C3AED; --accent-blue: #2563EB; --accent-green: #22C55E;
+            /* Color Palette */
+            --bg-primary: #050816;
+            --bg-secondary: #0C1126;
+            --card-bg: rgba(16, 22, 48, 0.75);
+            --accent-purple: #7C3AED;
+            --accent-blue: #2563EB;
+            --text-light: #D4D7E5;
+            --text-muted: #8A90A2;
+            --border-color: rgba(255, 255, 255, 0.08);
+            
+            /* Gradients & Shadows */
             --btn-gradient: linear-gradient(90deg, #7C3AED, #4F46E5);
-            --border-color: rgba(255, 255, 255, 0.08); --text-light: #D4D7E5; --text-muted: #8A90A2;
+            --card-shadow: 0 10px 40px rgba(0,0,0,.35);
+            --hero-glow: 0 25px 80px rgba(124,58,237,.18);
+            
+            /* Typography */
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
-        body { margin: 0; background: var(--bg-primary); color: #ffffff; background-image: radial-gradient(circle at top right, rgba(124,58,237,.12), transparent 40%), radial-gradient(circle at bottom left, rgba(37,99,235,.12), transparent 40%); background-attachment: fixed; overflow-x: hidden; }
-        a { text-decoration: none; color: inherit; }
-        .glass { background: var(--card-bg); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1px solid var(--border-color); }
-        .container { max-width: 1320px; margin: 0 auto; padding: 0 40px; }
-        .text-gradient { background: var(--btn-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        
-        .btn-primary { background: var(--btn-gradient); color: white; border: none; padding: 16px 32px; border-radius: 12px; font-weight: 600; font-size: 16px; cursor: pointer; box-shadow: 0 8px 25px rgba(124,58,237,.45); transition: 0.3s; }
-        .btn-primary:hover { opacity: 0.9; transform: translateY(-2px); }
-        .btn-secondary { background: transparent; color: white; border: 1px solid var(--border-color); padding: 16px 32px; border-radius: 12px; font-weight: 600; font-size: 16px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.3s; }
-        .btn-secondary:hover { background: rgba(255,255,255,0.05); }
+        body {
+            margin: 0;
+            background: 
+                radial-gradient(circle at top right, rgba(124,58,237,.12), transparent 40%),
+                radial-gradient(circle at bottom left, rgba(37,99,235,.12), transparent 40%),
+                var(--bg-primary);
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism Utilities */
+        .glass {
+            background: var(--card-bg);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid var(--border-color);
+        }
 
         /* Navbar */
-        nav { position: sticky; top: 0; z-index: 50; height: 82px; display: flex; justify-content: space-between; align-items: center; padding: 0 40px; border-bottom: 1px solid var(--border-color); background: rgba(5,8,22,0.8); backdrop-filter: blur(10px); }
-        .nav-links { display: flex; gap: 30px; font-weight: 600; color: #D4D7E5; }
-        .nav-links a:hover { color: white; }
+        nav {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            height: 82px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 40px;
+            border-bottom: 1px solid var(--border-color);
+        }
 
-        /* Hero */
-        .hero { display: flex; align-items: center; min-height: 600px; padding: 80px 0; }
-        .hero-left { flex: 1; max-width: 600px; }
-        .hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; border-radius: 30px; border: 1px solid rgba(124,58,237,0.3); background: rgba(124,58,237,0.1); font-size: 13px; font-weight: 600; color: #A78BFA; margin-bottom: 24px; }
-        .hero h1 { font-size: 64px; line-height: 1.1; font-weight: 800; margin: 0 0 24px 0; }
-        .hero p { font-size: 17px; color: var(--text-muted); line-height: 1.6; margin-bottom: 40px; }
-        .hero-buttons { display: flex; gap: 16px; margin-bottom: 40px; }
+        .nav-links {
+            display: flex;
+            align-items: center;
+        }
 
-        /* General Section & Grid */
-        .section { padding: 80px 0; }
-        .section-header { text-align: center; margin-bottom: 50px; }
-        .section-title { font-size: 36px; font-weight: 800; margin: 0 0 12px 0; }
+        .nav-links a {
+            color: var(--text-light);
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover { color: #fff; }
+
+        /* Dropdown Styles */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+            padding: 20px 0;
+        }
         
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 24px; }
-        .product-card { border-radius: 20px; padding: 16px; box-shadow: 0 10px 40px rgba(0,0,0,.35); transition: 0.4s; display: flex; flex-direction: column; }
-        .product-card:hover { transform: translateY(-8px) scale(1.02); border-color: rgba(124,58,237,.5); }
-        .product-image { width: 100%; height: 160px; object-fit: cover; border-radius: 12px; margin-bottom: 16px; }
-        .discount-badge { background: var(--btn-gradient); padding: 4px 8px; border-radius: 8px; font-size: 11px; font-weight: bold; display: inline-block; margin-bottom: 10px; }
-        .price { color: var(--accent-purple); font-weight: 700; font-size: 20px; }
-        .old-price { font-size: 13px; text-decoration: line-through; color: var(--text-muted); margin-left: 5px; }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: 60px;
+            left: 0;
+            min-width: 240px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            z-index: 100;
+            background: var(--card-bg);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid var(--border-color);
+        }
+        
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+        
+        .dropdown-content a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 14px 20px;
+            margin: 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .dropdown-content a:hover {
+            background: rgba(124,58,237,0.2);
+            color: #fff;
+        }
 
+        /* Buttons */
+        .btn-primary {
+            background: var(--btn-gradient);
+            color: white;
+            border: none;
+            padding: 18px 34px;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(124,58,237,.45);
+            transition: transform 0.3s, opacity 0.3s;
+        }
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        /* Hero Section */
+        .hero {
+            max-width: 1320px;
+            margin: 0 auto;
+            padding: 80px 20px;
+            display: flex;
+            align-items: center;
+            min-height: 720px;
+        }
+        
+        .hero-content { flex: 1; }
+        
+        .hero h1 {
+            font-size: 64px;
+            line-height: 72px;
+            font-weight: 800;
+            margin-bottom: 20px;
+        }
+        
+        .text-gradient {
+            background: var(--btn-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 17px;
+            color: var(--text-muted);
+            line-height: 30px;
+            margin-bottom: 40px;
+            max-width: 500px;
+        }
+
+        /* Product Grid */
+        .section-title {
+            text-align: center;
+            font-size: 42px;
+            margin-top: 120px;
+            margin-bottom: 40px;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 24px;
+            max-width: 1320px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .product-card {
+            border-radius: 20px;
+            padding: 18px;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+
+        .product-card:hover {
+            transform: translateY(-8px) scale(1.03);
+            border-color: rgba(124,58,237,.5);
+        }
+
+        .product-card h3 { font-size: 22px; margin: 15px 0 5px; }
+        .product-card p { color: var(--accent-purple); font-weight: 700; font-size: 20px; }
     </style>
 </head>
 <body>
+
+    <!-- Navbar -->
     <nav class="glass">
-        <div style="font-size: 24px; font-weight: 800;"><a href="index.html">PremiumStore</a></div>
+        <div style="font-size: 24px; font-weight: 800;">PremiumStore</div>
         <div class="nav-links">
             <a href="index.html">Home</a>
-            <a href="shop.html">Shop</a>
-            <a href="admin.html">Admin</a>
+            
+            <!-- Category Dropdown -->
+            <div class="dropdown">
+                <a href="shop.html" style="cursor: pointer;">Shop ▾</a>
+                <div class="dropdown-content">
+                    <a href="shop.html">All Products</a>
+                    <a href="shop.html?category=ott">🎬 OTT Subscriptions</a>
+                    <a href="shop.html?category=ai">🤖 AI Tools</a>
+                    <a href="shop.html?category=editing">🎨 Editing Tools</a>
+                    <a href="shop.html?category=education">🎓 Education & Career</a>
+                    <a href="shop.html?category=other">🛒 Other Plans</a>
+                    <a href="shop.html?category=bundles">📦 Digital Bundles</a>
+                </div>
+            </div>
+            
+            <a href="#">Support</a>
+        </div>
+        <div>
+            <button class="btn-primary" style="padding: 10px 20px; border-radius: 12px;">Login</button>
         </div>
     </nav>
 
-    <div class="container">
-        <section class="hero">
-            <div class="hero-left">
-                <div class="hero-badge"><i data-lucide="check-circle-2" style="width:16px;"></i> 100% Genuine Activation</div>
-                <h1>Premium Subscriptions<br>Up to <span class="text-gradient">99% Off</span></h1>
-                <p>OTT, AI Tools & Social Media Subscriptions. All plans activated on your personal account. Genuine • Secure • Affordable.</p>
-                <div class="hero-buttons">
-                    <button class="btn-primary" onclick="window.location.href='shop.html'">Shop Now</button>
-                    <button class="btn-secondary" onclick="window.open('https://wa.me/919967566736?text=Hi%20PremiumStore!', '_blank')"><i data-lucide="message-circle" style="width:18px;"></i> WhatsApp</button>
-                </div>
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-content">
+            <div style="display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 14px; margin-bottom: 20px; border: 1px solid var(--border-color);">
+                ✓ 100% Genuine Activation
             </div>
-            <div style="flex: 1; display: flex; justify-content: center;">
-                <div style="width: 400px; height: 400px; border-radius: 50%; border: 1px solid rgba(124,58,237,0.3); box-shadow: 0 0 100px rgba(124,58,237,0.2);"></div>
-            </div>
-        </section>
+            <h1>Premium Subscriptions<br>Up to <span class="text-gradient">99% Off</span></h1>
+            <p>OTT, AI Tools & Social Media Subscriptions. All plans activated on your personal account. Genuine • Secure • Affordable.</p>
+            <button class="btn-primary" onclick="window.location.href='shop.html'">Shop Now</button>
+        </div>
+        <!-- Right side abstract graphic placeholder -->
+        <div style="flex: 1; position: relative;">
+            <div style="width: 400px; height: 400px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); margin: auto; box-shadow: var(--hero-glow);"></div>
+        </div>
+    </section>
 
-        <section class="section">
-            <div class="section-header">
-                <h2 class="section-title">Best Sellers</h2>
-                <p style="color: var(--text-muted);">Most popular subscriptions with massive discounts</p>
-            </div>
-            <div class="product-grid" id="best-sellers-container"></div>
-        </section>
+    <!-- Dynamic Products Section (Fetched from Supabase) -->
+    <h2 class="section-title">Best Sellers</h2>
+    <div class="product-grid" id="product-container">
+        <!-- Products will be injected here by JavaScript -->
     </div>
 
     <script>
-        lucide.createIcons();
-        const db = supabase.createClient('https://ognjizizksfapgnnwgld.supabase.co', 'sb_publishable_O6_YMG5VN9PNyRUAkLn-vg_WWfPeJEb');
+        // --- SUPABASE CONFIGURATION ---
+        const SUPABASE_URL = 'https://ognjizizksfapgnnwgld.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_O6_YMG5VN9PNyRUAkLn-vg_WWfPeJEb';
+        
+        // Initialize Supabase Client
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        async function fetchBestSellers() {
-            const container = document.getElementById('best-sellers-container');
-            const { data, error } = await db.from('products').select('*').order('created_at', { ascending: false }).limit(6);
-            if (error) return;
+        // Function to fetch products and render HTML
+        async function fetchProducts() {
+            const container = document.getElementById('product-container');
+            
+            // Show a loading skeleton or message
+            container.innerHTML = '<p style="text-align: center; width: 100%;">Loading premium deals...</p>';
 
+            // Fetch data from your 'products' table
+            const { data, error } = await supabase
+                .from('products')
+                .select('*')
+                .limit(6);
+
+            if (error) {
+                console.error('Error fetching products:', error);
+                container.innerHTML = '<p>Failed to load products. Check console for details.</p>';
+                return;
+            }
+
+            // Clear loading message
             container.innerHTML = '';
+
+            // Render products
             data.forEach(product => {
-                const img = product.image_url || 'https://via.placeholder.com/300x200';
-                container.innerHTML += `
-                    <div class="product-card glass" onclick="window.location.href='product.html?id=${product.id}'" style="cursor:pointer;">
-                        <img src="${img}" class="product-image">
-                        ${product.discount_percentage ? `<div class="discount-badge">${product.discount_percentage}% OFF</div>` : ''}
-                        <h3 style="margin: 0 0 10px 0; font-size:18px;">${product.title}</h3>
-                        <div style="margin-top:auto; padding-top:15px;">
-                            <div class="price">₹${product.price} <span class="old-price">₹${product.old_price || ''}</span></div>
-                        </div>
-                    </div>
+                const card = document.createElement('div');
+                card.className = 'product-card glass';
+                card.innerHTML = `
+                    <div style="height: 120px; background: rgba(0,0,0,0.5); border-radius: 12px; margin-bottom: 15px;"></div>
+                    <span style="background: var(--btn-gradient); padding: 4px 8px; border-radius: 8px; font-size: 12px; font-weight: bold;">Up to ${product.discount_percentage}% OFF</span>
+                    <h3>${product.title}</h3>
+                    <p>₹${product.price} <span style="font-size: 14px; text-decoration: line-through; color: var(--text-muted);">₹${product.old_price}</span></p>
+                    <button class="btn-primary" style="width: 100%; margin-top: 15px; padding: 12px; font-size: 14px; border-radius: 12px;">Add to Cart</button>
                 `;
+                container.appendChild(card);
             });
         }
-        fetchBestSellers();
+
+        // Call the function on page load
+        fetchProducts(); 
     </script>
 </body>
 </html>
