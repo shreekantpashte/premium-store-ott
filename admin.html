@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | PremiumStore</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="styles.css">
+    
+    <style>
+        .admin-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 40px;
+            border-radius: 24px;
+        }
+
+        .admin-header {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        input, select, textarea {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            color: white;
+            padding: 14px 16px;
+            border-radius: 12px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            border-color: var(--accent-purple);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .helper-text {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: -4px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            margin-top: 20px;
+            padding: 16px;
+            font-size: 16px;
+            border-radius: 12px;
+        }
+        
+        .loading-spinner {
+            display: none;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 15px;
+            color: var(--accent-purple);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="glass">
+        <div style="font-size: 24px; font-weight: 800;">PremiumStore Admin</div>
+        <div class="nav-links">
+            <a href="index.html">View Live Site</a>
+        </div>
+    </nav>
+
+    <!-- Admin Form -->
+    <div class="admin-container glass">
+        <div class="admin-header">Add New Product</div>
+        
+        <form id="product-form">
+            <div class="form-grid">
+                
+                <!-- Product Name -->
+                <div class="form-group full-width">
+                    <label>Product Name</label>
+                    <input type="text" id="title" required placeholder="e.g., Prime Video 6 Months">
+                </div>
+
+                <!-- Category -->
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="category" required>
+                        <option value="" disabled selected>Select category</option>
+                        <option value="ott">OTT Subscriptions</option>
+                        <option value="ai">AI Tools</option>
+                        <option value="editing">Editing Tools</option>
+                        <option value="education">Education & Career</option>
+                        <option value="other">Other Plans</option>
+                        <option value="bundles">Digital Bundles</option>
+                    </select>
+                </div>
+
+                <!-- Validity -->
+                <div class="form-group">
+                    <label>Validity</label>
+                    <input type="text" id="validity" required placeholder="e.g., 1 Year, Lifetime">
+                </div>
+
+                <!-- Offer Price -->
+                <div class="form-group">
+                    <label>Offer Price (₹)</label>
+                    <input type="number" id="price" required placeholder="e.g., 599">
+                </div>
+
+                <!-- MRP -->
+                <div class="form-group">
+                    <label>MRP (₹)</label>
+                    <input type="number" id="old_price" required placeholder="e.g., 1499">
+                </div>
+
+                <!-- Delivery Time -->
+                <div class="form-group">
+                    <label>Delivery Time</label>
+                    <input type="text" id="delivery_time" required placeholder="e.g., 5-30 Minutes">
+                </div>
+
+                <!-- Warranty -->
+                <div class="form-group">
+                    <label>Warranty</label>
+                    <input type="text" id="warranty" required placeholder="e.g., 6 Months Replacement">
+                </div>
+
+                <!-- Activation Method -->
+                <div class="form-group full-width">
+                    <label>Activation Method</label>
+                    <input type="text" id="activation_method" required placeholder="e.g., Account credentials, License key">
+                </div>
+
+                <!-- Pointer Features -->
+                <div class="form-group full-width">
+                    <label>Pointer Features (Comma Separated)</label>
+                    <input type="text" id="features" placeholder="Personal Account, No Password Sharing, 4K Quality">
+                    <span class="helper-text">These will appear as tick marks on the product page.</span>
+                </div>
+
+                <!-- Trust Factors -->
+                <div class="form-group full-width">
+                    <label>Trust Factors (Comma Separated)</label>
+                    <input type="text" id="trust_factors" placeholder="100% Genuine, Secure Payment, 24/7 Support">
+                    <span class="helper-text">Icons shown securely under the buy button.</span>
+                </div>
+
+                <!-- Image Upload (Max 1MB) -->
+                <div class="form-group full-width">
+                    <label>Product Image (Max 1 MB)</label>
+                    <input type="file" id="image_file" accept="image/png, image/jpeg, image/webp" required>
+                </div>
+
+                <!-- Description -->
+                <div class="form-group full-width">
+                    <label>Description</label>
+                    <textarea id="description" required placeholder="Enter detailed product description..."></textarea>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-primary btn-submit" id="submit-btn">Publish Product</button>
+            <div class="loading-spinner" id="loading-msg">Uploading product... Please wait.</div>
+        </form>
+    </div>
+
+    <script>
+        // --- SUPABASE CONFIGURATION ---
+        const SUPABASE_URL = 'https://ognjizizksfapgnnwgld.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_O6_YMG5VN9PNyRUAkLn-vg_WWfPeJEb';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        document.getElementById('product-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = document.getElementById('submit-btn');
+            const loadingMsg = document.getElementById('loading-msg');
+            
+            // Disable button and show loading
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.5';
+            loadingMsg.style.display = 'block';
+
+            try {
+                // 1. Handle File Upload
+                const fileInput = document.getElementById('image_file');
+                const file = fileInput.files[0];
+                
+                if (file.size > 1024 * 1024) {
+                    alert("Error: Image size exceeds 1MB limit.");
+                    resetFormState();
+                    return;
+                }
+
+                // Generate a unique file name
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+                // Upload to Supabase Storage ('product-images' bucket)
+                const { error: uploadError } = await supabase.storage
+                    .from('product-images')
+                    .upload(`public/${fileName}`, file);
+
+                if (uploadError) throw uploadError;
+
+                // Get Public URL of the uploaded image
+                const { data: publicUrlData } = supabase.storage
+                    .from('product-images')
+                    .getPublicUrl(`public/${fileName}`);
+                
+                const imageUrl = publicUrlData.publicUrl;
+
+                // 2. Gather text inputs
+                const price = parseFloat(document.getElementById('price').value);
+                const old_price = parseFloat(document.getElementById('old_price').value);
+                
+                // Auto-calculate discount percentage
+                const discount_percentage = Math.round(((old_price - price) / old_price) * 100);
+
+                // Convert comma-separated strings to arrays
+                const featuresArray = document.getElementById('features').value.split(',').map(item => item.trim()).filter(i => i);
+                const trustFactorsArray = document.getElementById('trust_factors').value.split(',').map(item => item.trim()).filter(i => i);
+
+                // 3. Insert Database Record
+                const { error: dbError } = await supabase
+                    .from('products')
+                    .insert([
+                        {
+                            title: document.getElementById('title').value,
+                            category: document.getElementById('category').value,
+                            validity: document.getElementById('validity').value,
+                            price: price,
+                            old_price: old_price,
+                            discount_percentage: discount_percentage,
+                            delivery_time: document.getElementById('delivery_time').value,
+                            warranty: document.getElementById('warranty').value,
+                            activation_method: document.getElementById('activation_method').value,
+                            features: featuresArray,
+                            trust_factors: trustFactorsArray,
+                            description: document.getElementById('description').value,
+                            image_url: imageUrl
+                        }
+                    ]);
+
+                if (dbError) throw dbError;
+
+                alert('Product added successfully!');
+                document.getElementById('product-form').reset();
+
+            } catch (error) {
+                console.error(error);
+                alert('An error occurred: ' + error.message);
+            } finally {
+                resetFormState();
+            }
+
+            function resetFormState() {
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+                loadingMsg.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
