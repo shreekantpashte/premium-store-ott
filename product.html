@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details | PremiumStore</title>
+    <!-- Plus Jakarta Sans Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Supabase CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        :root {
+            --bg-primary: #050816;
+            --bg-secondary: #0C1126;
+            --card-bg: rgba(16, 22, 48, 0.75);
+            --accent-purple: #7C3AED;
+            --accent-green: #22C55E;
+            --btn-gradient: linear-gradient(90deg, #7C3AED, #4F46E5);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-light: #D4D7E5;
+            --text-muted: #8A90A2;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            margin: 0; background: var(--bg-primary); color: #ffffff;
+            background-image: radial-gradient(circle at top right, rgba(124,58,237,.12), transparent 40%),
+                              radial-gradient(circle at bottom left, rgba(37,99,235,.12), transparent 40%);
+            background-attachment: fixed; min-height: 100vh; overflow-x: hidden;
+        }
+
+        .glass {
+            background: var(--card-bg); backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px); border: 1px solid var(--border-color);
+        }
+
+        /* Navbar */
+        nav {
+            position: sticky; top: 0; z-index: 50; height: 82px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 40px; border-bottom: 1px solid var(--border-color);
+        }
+        .nav-links { display: flex; align-items: center; }
+        .nav-links a { color: #D4D7E5; text-decoration: none; margin: 0 15px; font-weight: 600; transition: color 0.3s; }
+        .nav-links a:hover { color: #fff; }
+        .nav-icons { display: flex; gap: 20px; align-items: center; color: var(--text-light); }
+        .nav-icons div { display: flex; flex-direction: column; align-items: center; font-size: 11px; cursor: pointer; }
+        .nav-icons div:hover { color: #fff; }
+
+        /* Container */
+        .container { max-width: 1320px; margin: 0 auto; padding: 20px 40px; }
+
+        /* Breadcrumb */
+        .breadcrumb { font-size: 13px; color: var(--text-muted); margin-bottom: 30px; display: flex; gap: 8px; }
+        .breadcrumb a { color: var(--text-muted); text-decoration: none; }
+        .breadcrumb a:hover { color: white; }
+
+        /* Top Grid */
+        .product-top { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; margin-bottom: 40px; }
+
+        /* Image Section */
+        .image-gallery { display: flex; flex-direction: column; gap: 16px; }
+        .main-image { width: 100%; height: 400px; object-fit: cover; border-radius: 24px; background: #000; border: 1px solid var(--border-color); }
+        .thumbnails { display: flex; gap: 12px; }
+        .thumbnail { width: 80px; height: 60px; border-radius: 12px; object-fit: cover; border: 2px solid transparent; cursor: pointer; opacity: 0.6; }
+        .thumbnail.active { border-color: var(--accent-purple); opacity: 1; }
+
+        /* Details Section */
+        .badges { display: flex; gap: 10px; margin-bottom: 16px; }
+        .badge { padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; border: 1px solid var(--border-color); }
+        .badge.purple { background: rgba(124,58,237,0.15); color: #A78BFA; border-color: rgba(124,58,237,0.3); }
+        .badge.green { background: rgba(34,197,94,0.15); color: #4ADE80; border-color: rgba(34,197,94,0.3); }
+        .badge.blue { background: rgba(59,130,246,0.15); color: #60A5FA; border-color: rgba(59,130,246,0.3); }
+
+        .product-title { font-size: 36px; font-weight: 800; margin: 0 0 8px 0; line-height: 1.2; }
+        .product-subtitle { font-size: 15px; color: var(--text-muted); margin-bottom: 20px; }
+
+        .price-box { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+        .price { font-size: 42px; font-weight: 800; }
+        .old-price { font-size: 20px; color: var(--text-muted); text-decoration: line-through; }
+        .discount-tag { background: var(--btn-gradient); padding: 4px 12px; border-radius: 8px; font-weight: 700; font-size: 14px; }
+
+        .stock-status { font-size: 14px; color: var(--accent-green); display: flex; align-items: center; gap: 8px; margin-bottom: 24px; font-weight: 600; }
+
+        .features-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 32px; }
+        .feature-item { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--text-light); }
+        .feature-item i { color: var(--accent-purple); }
+
+        .actions { display: flex; flex-direction: column; gap: 16px; margin-bottom: 32px; }
+        .btn-buy { background: var(--btn-gradient); color: white; border: none; padding: 18px; border-radius: 16px; font-size: 16px; font-weight: 700; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; box-shadow: 0 8px 25px rgba(124,58,237,.45); transition: 0.3s; }
+        .btn-buy:hover { transform: translateY(-2px); opacity: 0.9; }
+        
+        .btn-wa-group { display: flex; gap: 12px; }
+        .btn-whatsapp { flex: 1; background: transparent; border: 1px solid var(--border-color); color: white; padding: 16px; border-radius: 16px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; transition: 0.3s; }
+        .btn-whatsapp:hover { background: rgba(34,197,94,0.1); border-color: var(--accent-green); color: var(--accent-green); }
+        .btn-icon { width: 54px; height: 54px; background: transparent; border: 1px solid var(--border-color); border-radius: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-light); transition: 0.3s; }
+        .btn-icon:hover { background: rgba(255,255,255,0.05); color: white; }
+
+        /* Trust Strip */
+        .trust-strip { display: flex; justify-content: space-between; border-top: 1px solid var(--border-color); padding-top: 24px; }
+        .trust-item { display: flex; align-items: center; gap: 12px; }
+        .trust-icon { color: var(--accent-purple); }
+        .trust-text h4 { margin: 0; font-size: 13px; font-weight: 700; }
+        .trust-text p { margin: 2px 0 0 0; font-size: 11px; color: var(--text-muted); }
+
+        /* Middle Grid (Info & Why Us) */
+        .middle-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-bottom: 40px; }
+        .info-card { padding: 32px; border-radius: 24px; }
+        .section-title { font-size: 20px; font-weight: 700; margin: 0 0 24px 0; }
+        
+        .activation-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        .act-item { display: flex; align-items: flex-start; gap: 12px; }
+        .act-icon { color: var(--text-muted); }
+        .act-text h5 { margin: 0 0 4px 0; font-size: 12px; color: var(--text-muted); font-weight: 500; }
+        .act-text p { margin: 0; font-size: 14px; font-weight: 600; }
+
+        .why-us-list { display: flex; flex-direction: column; gap: 16px; }
+        .why-us-list div { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500; }
+        .why-us-list i { color: var(--accent-purple); }
+
+        /* Bottom Steps */
+        .how-it-works { padding: 32px; border-radius: 24px; margin-bottom: 40px; }
+        .steps { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; }
+        .step { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; width: 120px; }
+        .step-icon { width: 64px; height: 64px; border-radius: 50%; background: rgba(124,58,237,0.1); border: 1px solid rgba(124,58,237,0.3); display: flex; justify-content: center; align-items: center; color: var(--accent-purple); position: relative; }
+        .step-num { position: absolute; bottom: 0; right: 0; background: var(--btn-gradient); width: 20px; height: 20px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 10px; font-weight: 700; border: 2px solid var(--card-bg); }
+        .step h4 { margin: 0; font-size: 14px; font-weight: 700; }
+        .step p { margin: 0; font-size: 11px; color: var(--text-muted); }
+        .step-arrow { color: var(--border-color); }
+
+        .loading-overlay { position: fixed; inset: 0; background: var(--bg-primary); z-index: 100; display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <!-- Loading State -->
+    <div id="loading" class="loading-overlay">Loading Product...</div>
+
+    <!-- Navbar -->
+    <nav class="glass">
+        <div style="font-size: 24px; font-weight: 800;">PremiumStore</div>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="shop.html">Shop</a>
+            <a href="#">Support</a>
+        </div>
+        <div class="nav-icons">
+            <div><i data-lucide="search"></i> Search</div>
+            <div><i data-lucide="heart"></i> Wishlist</div>
+            <div><i data-lucide="shopping-cart"></i> Cart</div>
+            <div><i data-lucide="user"></i> Account</div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+            <a href="index.html">Home</a> &rsaquo; 
+            <a href="shop.html" id="bc-category">Category</a> &rsaquo; 
+            <span id="bc-title" style="color: white;">Product Name</span>
+        </div>
+
+        <!-- Top Section: Image & Main Details -->
+        <div class="product-top">
+            
+            <!-- Left: Image Gallery -->
+            <div class="image-gallery">
+                <img src="" id="main-img" class="main-image" alt="Product Image">
+                <div class="thumbnails">
+                    <!-- Showing same image as thumbnail to match UI style -->
+                    <img src="" id="thumb-1" class="thumbnail active" alt="">
+                </div>
+            </div>
+
+            <!-- Right: Details -->
+            <div class="product-details-right">
+                <div class="badges">
+                    <span class="badge purple">Best Seller</span>
+                    <span class="badge green">Genuine</span>
+                    <span class="badge blue">Instant Delivery</span>
+                </div>
+
+                <h1 class="product-title" id="p-title">Product Title</h1>
+                <p class="product-subtitle">Official Premium Plan | Personal Account | Works Worldwide</p>
+
+                <div class="price-box">
+                    <span class="price" id="p-price">₹0</span>
+                    <span class="old-price" id="p-old-price">₹0</span>
+                    <span class="discount-tag" id="p-discount">0% OFF</span>
+                </div>
+
+                <div class="stock-status">
+                    <i data-lucide="check-circle-2" style="width:16px;"></i> In Stock | <span style="color:var(--text-muted); font-weight:400; margin-left:4px;"> Instant Activation (<span id="p-delivery">0-4 Hours</span>)</span>
+                </div>
+
+                <!-- Features Grid -->
+                <div class="features-grid" id="p-features">
+                    <!-- Features injected here -->
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="actions">
+                    <button class="btn-buy">
+                        <i data-lucide="zap"></i> Buy Now
+                    </button>
+                    <div class="btn-wa-group">
+                        <button class="btn-whatsapp" onclick="orderWhatsApp()">
+                            <i data-lucide="message-circle"></i> Order on WhatsApp
+                        </button>
+                        <button class="btn-icon">
+                            <i data-lucide="heart"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Trust Strip -->
+                <div class="trust-strip">
+                    <div class="trust-item">
+                        <i data-lucide="shield-check" class="trust-icon"></i>
+                        <div class="trust-text"><h4>100% Genuine</h4><p>Official Activation</p></div>
+                    </div>
+                    <div class="trust-item">
+                        <i data-lucide="lock" class="trust-icon"></i>
+                        <div class="trust-text"><h4>Secure Payment</h4><p>100% Protected</p></div>
+                    </div>
+                    <div class="trust-item">
+                        <i data-lucide="headphones" class="trust-icon"></i>
+                        <div class="trust-text"><h4>24/7 Support</h4><p>Always Here</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Middle Section: Info & Why Us -->
+        <div class="middle-grid">
+            <div class="info-card glass">
+                <h3 class="section-title">Activation Information</h3>
+                <div class="activation-grid">
+                    <div class="act-item">
+                        <i data-lucide="user" class="act-icon"></i>
+                        <div class="act-text"><h5>Account Type</h5><p id="info-activation">Personal Account</p></div>
+                    </div>
+                    <div class="act-item">
+                        <i data-lucide="clock" class="act-icon"></i>
+                        <div class="act-text"><h5>Delivery Time</h5><p id="info-delivery">5 - 30 Minutes</p></div>
+                    </div>
+                    <div class="act-item">
+                        <i data-lucide="calendar" class="act-icon"></i>
+                        <div class="act-text"><h5>Validity</h5><p id="info-validity">1 Year</p></div>
+                    </div>
+                    <div class="act-item">
+                        <i data-lucide="globe" class="act-icon"></i>
+                        <div class="act-text"><h5>Region</h5><p>Worldwide</p></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-card glass">
+                <h3 class="section-title">Why Buy From Us?</h3>
+                <div class="why-us-list" id="p-trust-factors">
+                    <!-- Trust Factors injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Section: How it Works -->
+        <div class="how-it-works glass">
+            <h3 class="section-title">How Activation Works</h3>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-icon"><i data-lucide="shopping-cart"></i><div class="step-num">1</div></div>
+                    <h4>Place Order</h4><p>Complete your payment</p>
+                </div>
+                <i data-lucide="arrow-right" class="step-arrow"></i>
+                <div class="step">
+                    <div class="step-icon"><i data-lucide="message-circle"></i><div class="step-num">2</div></div>
+                    <h4>Share Details</h4><p>Share your order ID</p>
+                </div>
+                <i data-lucide="arrow-right" class="step-arrow"></i>
+                <div class="step">
+                    <div class="step-icon"><i data-lucide="check-circle-2"></i><div class="step-num">3</div></div>
+                    <h4>Get Activated</h4><p>Account activated fast</p>
+                </div>
+                <i data-lucide="arrow-right" class="step-arrow"></i>
+                <div class="step">
+                    <div class="step-icon"><i data-lucide="play-circle"></i><div class="step-num">4</div></div>
+                    <h4>Enjoy Streaming</h4><p>Start watching instantly</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Initialize Icons
+        lucide.createIcons();
+
+        // --- SUPABASE CONFIGURATION ---
+        const SUPABASE_URL = 'https://ognjizizksfapgnnwgld.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_O6_YMG5VN9PNyRUAkLn-vg_WWfPeJEb';
+        const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let currentProduct = null;
+
+        async function loadProduct() {
+            // 1. Get Product ID from URL (e.g., product.html?id=123)
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('id');
+
+            if (!productId) {
+                document.getElementById('loading').innerText = "Product Not Found. Redirecting...";
+                setTimeout(() => window.location.href = 'shop.html', 2000);
+                return;
+            }
+
+            // 2. Fetch Product from Supabase
+            const { data, error } = await db.from('products').select('*').eq('id', productId).single();
+
+            if (error || !data) {
+                document.getElementById('loading').innerText = "Error loading product.";
+                console.error(error);
+                return;
+            }
+
+            currentProduct = data;
+
+            // 3. Populate DOM Elements
+            document.title = `${data.title} | PremiumStore`;
+            document.getElementById('bc-category').innerText = data.category.toUpperCase();
+            document.getElementById('bc-title').innerText = data.title;
+            
+            document.getElementById('p-title').innerText = data.title;
+            document.getElementById('p-price').innerText = `₹${data.price}`;
+            document.getElementById('p-old-price').innerText = `₹${data.old_price}`;
+            document.getElementById('p-discount').innerText = `${data.discount_percentage}% OFF`;
+            document.getElementById('p-delivery').innerText = data.delivery_time || 'Instant';
+            
+            // Info Grid
+            document.getElementById('info-activation').innerText = data.activation_method || 'Personal Account';
+            document.getElementById('info-delivery').innerText = data.delivery_time || '5-30 Minutes';
+            document.getElementById('info-validity').innerText = data.validity || 'Lifetime';
+
+            // Images
+            const imgUrl = data.image_url || 'https://via.placeholder.com/600x400/101630/FFFFFF?text=No+Image';
+            document.getElementById('main-img').src = imgUrl;
+            document.getElementById('thumb-1').src = imgUrl;
+
+            // Features (Ticks)
+            const featuresContainer = document.getElementById('p-features');
+            if (data.features && data.features.length > 0) {
+                data.features.forEach(feature => {
+                    featuresContainer.innerHTML += `
+                        <div class="feature-item">
+                            <i data-lucide="check" style="width:18px;"></i> ${feature}
+                        </div>
+                    `;
+                });
+            } else {
+                featuresContainer.innerHTML = '<div class="feature-item"><i data-lucide="check" style="width:18px;"></i> Premium Quality Assured</div>';
+            }
+
+            // Trust Factors (Why us list)
+            const trustContainer = document.getElementById('p-trust-factors');
+            if (data.trust_factors && data.trust_factors.length > 0) {
+                data.trust_factors.forEach(factor => {
+                    trustContainer.innerHTML += `
+                        <div><i data-lucide="check-circle" style="width:18px;"></i> ${factor}</div>
+                    `;
+                });
+            } else {
+                trustContainer.innerHTML = '<div><i data-lucide="check-circle" style="width:18px;"></i> 100% Genuine & Official Method</div>';
+            }
+
+            // Re-initialize dynamic icons injected via JS
+            lucide.createIcons();
+
+            // Hide Loading Screen
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function orderWhatsApp() {
+            if(!currentProduct) return;
+            const text = `Hi PremiumStore! I want to buy *${currentProduct.title}* for ₹${currentProduct.price}. Please help me with the payment details.`;
+            const phone = "919876543210"; // Replace with your actual WhatsApp Number
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        loadProduct();
+    </script>
+</body>
+</html>
