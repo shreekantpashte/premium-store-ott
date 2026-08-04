@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shop | PremiumStore</title>
+    <!-- Plus Jakarta Sans Font -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
         :root {
@@ -14,7 +15,6 @@
             --bg-secondary: #0C1126;
             --card-bg: rgba(16, 22, 48, 0.75);
             --accent-purple: #7C3AED;
-            --accent-green: #22C55E;
             --btn-gradient: linear-gradient(90deg, #7C3AED, #4F46E5);
             --border-color: rgba(255, 255, 255, 0.08);
             --text-muted: #8A90A2;
@@ -28,75 +28,133 @@
             background-attachment: fixed; min-height: 100vh; overflow-x: hidden;
         }
 
-        .glass { background: var(--card-bg); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1px solid var(--border-color); }
+        .glass {
+            background: var(--card-bg); backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px); border: 1px solid var(--border-color);
+        }
+
+        /* Navbar */
+        nav {
+            position: sticky; top: 0; z-index: 50; height: 82px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0 40px; border-bottom: 1px solid var(--border-color);
+        }
         
-        nav { position: sticky; top: 0; z-index: 50; height: 82px; display: flex; justify-content: space-between; align-items: center; padding: 0 40px; border-bottom: 1px solid var(--border-color); background: rgba(5,8,22,0.8); backdrop-filter: blur(10px); }
-        .nav-links { display: flex; align-items: center; gap: 30px; }
-        .nav-links a { color: #D4D7E5; text-decoration: none; font-weight: 600; }
+        .nav-links { display: flex; align-items: center; }
+        .nav-links a { color: #D4D7E5; text-decoration: none; margin: 0 15px; font-weight: 600; transition: color 0.3s; }
         .nav-links a:hover { color: #fff; }
         
-        .nav-icons { display: flex; gap: 24px; align-items: center; color: #D4D7E5; cursor: pointer; }
-        .cart-badge { background: var(--accent-purple); color: white; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 10px; position: absolute; top: -8px; right: -12px; }
+        /* Dropdown Styles */
+        .dropdown { position: relative; display: inline-block; padding: 20px 0; }
+        .dropdown-content {
+            display: none; position: absolute; top: 60px; left: 0; min-width: 240px;
+            border-radius: 12px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            z-index: 100; background: var(--card-bg); backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px); border: 1px solid var(--border-color);
+        }
+        .dropdown:hover .dropdown-content { display: block; }
+        .dropdown-content a {
+            display: flex; align-items: center; gap: 10px; padding: 14px 20px;
+            margin: 0; border-bottom: 1px solid var(--border-color);
+        }
+        .dropdown-content a:hover { background: rgba(124,58,237,0.2); color: #fff; }
 
-        .btn-primary { background: var(--btn-gradient); color: white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: 600; cursor: pointer; transition: 0.3s; }
-        .btn-primary:hover { opacity: 0.9; }
+        .btn-primary {
+            background: var(--btn-gradient); color: white; border: none;
+            padding: 10px 20px; border-radius: 12px; font-weight: 600; cursor: pointer;
+            box-shadow: 0 8px 25px rgba(124,58,237,.45); transition: 0.3s;
+        }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-2px); }
 
-        .shop-container { display: flex; max-width: 1440px; margin: 40px auto; padding: 0 40px; gap: 40px; }
-        .sidebar { width: 280px; flex-shrink: 0; border-radius: 20px; padding: 24px; height: fit-content; position: sticky; top: 120px; }
+        /* Layout */
+        .shop-container {
+            display: flex; max-width: 1440px; margin: 40px auto; padding: 0 40px; gap: 40px;
+        }
+
+        /* Sidebar Filter */
+        .sidebar {
+            width: 280px; flex-shrink: 0; border-radius: 20px; padding: 24px;
+            height: fit-content; position: sticky; top: 120px;
+        }
         .filter-section { margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 24px; }
+        .filter-section:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
         .filter-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
-        .radio-group label { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; font-size: 14px; color: var(--text-muted); cursor: pointer; }
+        
+        .radio-group label {
+            display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+            font-size: 14px; color: var(--text-muted); cursor: pointer;
+        }
         .radio-group input { accent-color: var(--accent-purple); width: 16px; height: 16px; }
-        .price-slider { width: 100%; accent-color: var(--accent-purple); }
-        select.sort-select { width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color); color: white; border-radius: 8px; outline: none; }
+        
+        .price-slider { width: 100%; margin-top: 10px; accent-color: var(--accent-purple); }
+        .price-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-muted); margin-top: 5px; }
 
+        select.sort-select {
+            width: 100%; padding: 10px; background: rgba(0,0,0,0.3); border: 1px solid var(--border-color);
+            color: white; border-radius: 8px; font-family: inherit; outline: none;
+        }
+
+        /* Product Grid */
         .product-area { flex: 1; }
         .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .page-title { font-size: 32px; font-weight: 800; margin: 0; }
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 24px; }
-        .product-card { border-radius: 20px; padding: 16px; box-shadow: 0 10px 40px rgba(0,0,0,.35); transition: 0.4s; display: flex; flex-direction: column; justify-content: space-between; }
-        .product-card:hover { transform: translateY(-8px); border-color: rgba(124,58,237,.5); }
-        .product-image { width: 100%; height: 160px; object-fit: cover; border-radius: 12px; margin-bottom: 16px; background: #000; }
-        .discount-badge { background: var(--btn-gradient); padding: 4px 8px; border-radius: 8px; font-size: 11px; font-weight: bold; display: inline-block; margin-bottom: 10px; }
+        
+        .product-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 24px;
+        }
+
+        .product-card {
+            border-radius: 20px; padding: 16px; box-shadow: 0 10px 40px rgba(0,0,0,.35);
+            transition: transform 0.4s ease; display: flex; flex-direction: column; justify-content: space-between;
+        }
+        .product-card:hover { transform: translateY(-8px) scale(1.02); border-color: rgba(124,58,237,.5); }
+        .product-image {
+            width: 100%; height: 160px; object-fit: cover; border-radius: 12px; margin-bottom: 16px; background: #000;
+        }
+        .discount-badge {
+            background: var(--btn-gradient); padding: 4px 8px; border-radius: 8px;
+            font-size: 11px; font-weight: bold; display: inline-block; margin-bottom: 10px;
+        }
+        .product-card h3 { font-size: 18px; margin: 0 0 10px 0; }
+        .price-row { margin-top: auto; padding-top: 15px; }
         .price { color: var(--accent-purple); font-weight: 700; font-size: 20px; }
         .old-price { font-size: 13px; text-decoration: line-through; color: var(--text-muted); margin-left: 5px; }
-
-        /* Cart Drawer */
-        #cart-drawer { position: fixed; top: 0; right: -400px; width: 380px; height: 100vh; background: #0C1126; border-left: 1px solid var(--border-color); z-index: 1000; transition: right 0.4s ease; display: flex; flex-direction: column; padding: 24px; }
-        #cart-drawer.open { right: 0; }
-        .cart-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 20px; }
-        .cart-items { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
-        .cart-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); }
-        .cart-footer { border-top: 1px solid var(--border-color); padding-top: 20px; margin-top: 20px; }
-        .btn-whatsapp-checkout { background: #22C55E; color: white; border: none; width: 100%; padding: 16px; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 12px; }
-        .backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 999; display: none; }
+        
+        .empty-state { text-align: center; padding: 60px; color: var(--text-muted); grid-column: 1 / -1; }
     </style>
 </head>
 <body>
 
-    <div class="backdrop" id="cart-backdrop" onclick="toggleCart()"></div>
-    <div id="cart-drawer" class="glass">
-        <div class="cart-header"><h3>Your Shopping Cart</h3><button onclick="toggleCart()" style="background:none; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button></div>
-        <div class="cart-items" id="cart-items-container"></div>
-        <div class="cart-footer">
-            <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: 700; margin-bottom: 12px;"><span>Total:</span><span id="cart-total">₹0</span></div>
-            <button class="btn-whatsapp-checkout" onclick="checkoutWhatsApp()"><i data-lucide="message-circle"></i> Checkout via WhatsApp</button>
-        </div>
-    </div>
-
+    <!-- Navbar -->
     <nav class="glass">
-        <div style="font-size: 24px; font-weight: 800;"><a href="index.html" style="color:white; text-decoration:none;">PremiumStore</a></div>
+        <div style="font-size: 24px; font-weight: 800;">PremiumStore</div>
         <div class="nav-links">
             <a href="index.html">Home</a>
-            <a href="shop.html" style="color: white;">Shop</a>
+            
+            <!-- Category Dropdown -->
+            <div class="dropdown">
+                <a href="shop.html" style="cursor: pointer; color: white;">Shop ▾</a>
+                <div class="dropdown-content">
+                    <a href="shop.html">All Products</a>
+                    <a href="shop.html?category=ott">🎬 OTT Subscriptions</a>
+                    <a href="shop.html?category=ai">🤖 AI Tools</a>
+                    <a href="shop.html?category=editing">🎨 Editing Tools</a>
+                    <a href="shop.html?category=education">🎓 Education & Career</a>
+                    <a href="shop.html?category=other">🛒 Other Plans</a>
+                    <a href="shop.html?category=bundles">📦 Digital Bundles</a>
+                </div>
+            </div>
+            
             <a href="#">Support</a>
         </div>
-        <div class="nav-icons" style="display:flex; gap:20px;">
-            <div onclick="toggleCart()" style="position:relative; display:flex; align-items:center; gap:6px;"><i data-lucide="shopping-cart"></i> Cart <span class="cart-badge" id="cart-count">0</span></div>
+        <div>
+            <button class="btn-primary">Login</button>
         </div>
     </nav>
 
     <div class="shop-container">
+        
+        <!-- Sidebar Filter -->
         <aside class="sidebar glass">
             <div class="filter-section">
                 <div class="filter-title">Categories</div>
@@ -110,10 +168,16 @@
                     <label><input type="radio" name="category" value="bundles" onchange="fetchProducts()"> 📦 Digital Bundles</label>
                 </div>
             </div>
+
             <div class="filter-section">
                 <div class="filter-title">Max Price (₹) <span id="price-display">5000</span></div>
                 <input type="range" id="price-range" class="price-slider" min="50" max="5000" value="5000" step="50" oninput="updatePriceDisplay()" onchange="fetchProducts()">
+                <div class="price-labels">
+                    <span>₹50</span>
+                    <span>₹5000</span>
+                </div>
             </div>
+
             <div class="filter-section">
                 <div class="filter-title">Sort By</div>
                 <select id="sort-by" class="sort-select" onchange="fetchProducts()">
@@ -124,119 +188,117 @@
             </div>
         </aside>
 
+        <!-- Product Grid Area -->
         <div class="product-area">
-            <div class="page-header"><h1 class="page-title" id="shop-title">All Products</h1><div id="product-count" style="color: var(--text-muted);">Loading...</div></div>
-            <div class="product-grid" id="product-container"></div>
+            <div class="page-header">
+                <h1 class="page-title" id="shop-title">All Products</h1>
+                <div id="product-count" style="color: var(--text-muted); font-size: 14px;">Loading...</div>
+            </div>
+            
+            <div class="product-grid" id="product-container">
+                <!-- Products dynamically injected here -->
+            </div>
         </div>
     </div>
 
     <script>
-        lucide.createIcons();
+        // --- SUPABASE CONFIGURATION ---
         const SUPABASE_URL = 'https://ognjizizksfapgnnwgld.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_O6_YMG5VN9PNyRUAkLn-vg_WWfPeJEb';
+        
         const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        // Update Slider Display Text
         function updatePriceDisplay() {
             document.getElementById('price-display').innerText = document.getElementById('price-range').value;
         }
 
+        // On Load: Check if a category was passed in the URL
         window.onload = () => {
             const urlParams = new URLSearchParams(window.location.search);
             const categoryFromUrl = urlParams.get('category');
+            
             if (categoryFromUrl) {
+                // Find the radio button that matches the URL category and check it
                 const radio = document.querySelector(`input[name="category"][value="${categoryFromUrl}"]`);
                 if (radio) radio.checked = true;
             }
-            updateCartUI();
             fetchProducts();
         };
 
-        // Cart Logic
-        function getCart() { return JSON.parse(localStorage.getItem('ps_cart') || '[]'); }
-        function saveCart(cart) { localStorage.setItem('ps_cart', JSON.stringify(cart)); updateCartUI(); }
-        function addToCart(id, title, price) {
-            let cart = getCart();
-            let item = cart.find(i => i.id === id);
-            if(item) { item.qty += 1; } else { cart.push({ id, title, price, qty: 1 }); }
-            saveCart(cart);
-            toggleCart();
-        }
-        function removeFromCart(id) { saveCart(getCart().filter(i => i.id !== id)); }
-        function updateCartUI() {
-            const cart = getCart();
-            document.getElementById('cart-count').innerText = cart.reduce((sum, i) => sum + i.qty, 0);
-            const container = document.getElementById('cart-items-container');
-            container.innerHTML = '';
-            if(cart.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:var(--text-muted); margin-top:40px;">Your cart is empty.</p>';
-                document.getElementById('cart-total').innerText = '₹0';
-                return;
-            }
-            let total = 0;
-            cart.forEach(item => {
-                total += (item.price * item.qty);
-                container.innerHTML += `
-                    <div class="cart-item">
-                        <div><div style="font-weight:600; font-size:14px;">${item.title}</div><div style="font-size:12px; color:var(--text-muted);">₹${item.price} × ${item.qty}</div></div>
-                        <button onclick="removeFromCart('${item.id}')" style="background:none; border:none; color:#EF4444; cursor:pointer;">Remove</button>
-                    </div>
-                `;
-            });
-            document.getElementById('cart-total').innerText = `₹${total}`;
-        }
-        function toggleCart() {
-            document.getElementById('cart-drawer').classList.toggle('open');
-            document.getElementById('cart-backdrop').style.display = document.getElementById('cart-drawer').classList.contains('open') ? 'block' : 'none';
-        }
-        function checkoutWhatsApp() {
-            const cart = getCart();
-            if(cart.length === 0) { alert('Your cart is empty!'); return; }
-            let msg = "Hi PremiumStore! I want to place an order for the following items:\n\n";
-            let total = 0;
-            cart.forEach((item, index) => {
-                msg += `${index + 1}. *${item.title}* - ₹${item.price} x ${item.qty} = ₹${item.price * item.qty}\n`;
-                total += (item.price * item.qty);
-            });
-            msg += `\n*Total Amount: ₹${total}*\nPlease help me proceed with the payment.`;
-            window.open(`https://wa.me/919967566736?text=${encodeURIComponent(msg)}`, '_blank');
-        }
-
+        // Main Fetch & Render Function
         async function fetchProducts() {
             const container = document.getElementById('product-container');
+            const countDisplay = document.getElementById('product-count');
+            const titleDisplay = document.getElementById('shop-title');
+            
+            container.innerHTML = '<div class="empty-state">Loading premium products...</div>';
+
+            // 1. Get Filter Values from Sidebar
             const activeCategory = document.querySelector('input[name="category"]:checked').value;
             const maxPrice = document.getElementById('price-range').value;
             const sortBy = document.getElementById('sort-by').value;
 
+            // Update Page Title based on category
+            if(activeCategory === 'all') {
+                titleDisplay.innerText = 'All Products';
+            } else {
+                titleDisplay.innerText = document.querySelector('input[name="category"]:checked').parentNode.innerText.trim();
+            }
+
+            // 2. Build Supabase Query
             let query = db.from('products').select('*');
-            if (activeCategory !== 'all') query = query.eq('category', activeCategory);
+            
+            // Apply Category Filter
+            if (activeCategory !== 'all') {
+                query = query.eq('category', activeCategory);
+            }
+
+            // Apply Price Filter
             query = query.lte('price', maxPrice);
+
+            // Apply Sorting
             if (sortBy === 'newest') query = query.order('created_at', { ascending: false });
             if (sortBy === 'price_asc') query = query.order('price', { ascending: true });
             if (sortBy === 'price_desc') query = query.order('price', { ascending: false });
 
+            // 3. Execute Query
             const { data, error } = await query;
-            if (error) { container.innerHTML = 'Failed to load products.'; return; }
 
-            document.getElementById('product-count').innerText = `Showing ${data.length} Results`;
+            if (error) {
+                console.error("Supabase Error:", error);
+                container.innerHTML = `<div class="empty-state">Failed to load products. Error: ${error.message}</div>`;
+                return;
+            }
+
+            countDisplay.innerText = `Showing ${data.length} Results`;
             container.innerHTML = '';
-            if (data.length === 0) { container.innerHTML = '<div style="grid-column:1/-1; text-align:center; color:var(--text-muted); padding:40px;">No products found.</div>'; return; }
 
+            if (data.length === 0) {
+                container.innerHTML = '<div class="empty-state">No products found matching your filters.</div>';
+                return;
+            }
+
+            // 4. Render Products with clickable links pointing to product.html
             data.forEach(product => {
-                const img = product.image_url || 'https://via.placeholder.com/300x200';
-                container.innerHTML += `
-                    <div class="product-card glass">
-                        <a href="product.html?id=${product.id}">
-                            <img src="${img}" class="product-image">
-                            ${product.discount_percentage ? `<div class="discount-badge">${product.discount_percentage}% OFF</div>` : ''}
-                            <h3>${product.title}</h3>
-                            <div style="font-size: 12px; color: var(--text-muted);">${product.validity || ''} • ${product.delivery_time || ''}</div>
-                        </a>
-                        <div style="margin-top:auto; padding-top:15px;">
-                            <div class="price">₹${product.price} <span class="old-price">₹${product.old_price || ''}</span></div>
-                            <button class="btn-primary" style="width:100%; margin-top:12px; padding:10px; font-size:14px;" onclick="addToCart('${product.id}', '${product.title}', ${product.price})">Add to Cart</button>
-                        </div>
+                const imageUrl = product.image_url ? product.image_url : 'https://via.placeholder.com/300x200/101630/FFFFFF?text=No+Image';
+
+                const card = document.createElement('div');
+                card.className = 'product-card glass';
+                card.innerHTML = `
+                    <a href="product.html?id=${product.id}" style="text-decoration: none; color: inherit; cursor: pointer;">
+                        <img src="${imageUrl}" alt="${product.title}" class="product-image">
+                        ${product.discount_percentage ? `<div class="discount-badge">${product.discount_percentage}% OFF</div>` : ''}
+                        <h3>${product.title}</h3>
+                        <div style="font-size: 12px; color: var(--text-muted);">${product.validity || ''} • ${product.delivery_time || ''}</div>
+                    </a>
+                    
+                    <div class="price-row">
+                        <div class="price">₹${product.price} <span class="old-price">₹${product.old_price || ''}</span></div>
+                        <button class="btn-primary" style="width: 100%; margin-top: 12px;" onclick="window.location.href='product.html?id=${product.id}'">Buy Now</button>
                     </div>
                 `;
+                container.appendChild(card);
             });
         }
     </script>
