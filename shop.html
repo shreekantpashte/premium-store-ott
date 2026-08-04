@@ -206,7 +206,6 @@
         const SUPABASE_URL = 'https://ognjizizksfapgnnwgld.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_O6_YMG5VN9PNyRUAkLn-vg_WWfPeJEb';
         
-        // FIXED: Renamed variable to 'db' to avoid namespace collision with Supabase CDN script
         const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // Update Slider Display Text
@@ -247,7 +246,7 @@
                 titleDisplay.innerText = document.querySelector('input[name="category"]:checked').parentNode.innerText.trim();
             }
 
-            // 2. Build Supabase Query (using 'db' instead of 'supabase')
+            // 2. Build Supabase Query
             let query = db.from('products').select('*');
             
             // Apply Category Filter
@@ -280,22 +279,23 @@
                 return;
             }
 
-            // 4. Render Products
+            // 4. Render Products with clickable links pointing to product.html
             data.forEach(product => {
                 const imageUrl = product.image_url ? product.image_url : 'https://via.placeholder.com/300x200/101630/FFFFFF?text=No+Image';
 
                 const card = document.createElement('div');
                 card.className = 'product-card glass';
                 card.innerHTML = `
-                    <div>
+                    <a href="product.html?id=${product.id}" style="text-decoration: none; color: inherit; cursor: pointer;">
                         <img src="${imageUrl}" alt="${product.title}" class="product-image">
                         ${product.discount_percentage ? `<div class="discount-badge">${product.discount_percentage}% OFF</div>` : ''}
                         <h3>${product.title}</h3>
                         <div style="font-size: 12px; color: var(--text-muted);">${product.validity || ''} • ${product.delivery_time || ''}</div>
-                    </div>
+                    </a>
+                    
                     <div class="price-row">
                         <div class="price">₹${product.price} <span class="old-price">₹${product.old_price || ''}</span></div>
-                        <button class="btn-primary" style="width: 100%; margin-top: 12px;">Add to Cart</button>
+                        <button class="btn-primary" style="width: 100%; margin-top: 12px;" onclick="window.location.href='product.html?id=${product.id}'">Buy Now</button>
                     </div>
                 `;
                 container.appendChild(card);
