@@ -4,485 +4,117 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PremiumStore | OTT & AI Subscriptions</title>
-    <!-- Plus Jakarta Sans Font -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Supabase CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <style>
         :root {
-            --bg-primary: #050816;
-            --bg-secondary: #0C1126;
-            --card-bg: rgba(16, 22, 48, 0.75);
-            --accent-purple: #7C3AED;
-            --accent-blue: #2563EB;
-            --accent-green: #22C55E;
+            --bg-primary: #050816; --bg-secondary: #0C1126; --card-bg: rgba(16, 22, 48, 0.75);
+            --accent-purple: #7C3AED; --accent-blue: #2563EB; --accent-green: #22C55E;
             --btn-gradient: linear-gradient(90deg, #7C3AED, #4F46E5);
-            --border-color: rgba(255, 255, 255, 0.08);
-            --text-light: #D4D7E5;
-            --text-muted: #8A90A2;
+            --border-color: rgba(255, 255, 255, 0.08); --text-light: #D4D7E5; --text-muted: #8A90A2;
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
-        body {
-            margin: 0; background: var(--bg-primary); color: #ffffff;
-            background-image: radial-gradient(circle at top right, rgba(124,58,237,.12), transparent 40%),
-                              radial-gradient(circle at bottom left, rgba(37,99,235,.12), transparent 40%);
-            background-attachment: fixed; overflow-x: hidden;
-        }
-
+        body { margin: 0; background: var(--bg-primary); color: #ffffff; background-image: radial-gradient(circle at top right, rgba(124,58,237,.12), transparent 40%), radial-gradient(circle at bottom left, rgba(37,99,235,.12), transparent 40%); background-attachment: fixed; overflow-x: hidden; }
         a { text-decoration: none; color: inherit; }
-        
-        .glass {
-            background: var(--card-bg); backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px); border: 1px solid var(--border-color);
-        }
-
+        .glass { background: var(--card-bg); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border: 1px solid var(--border-color); }
         .container { max-width: 1320px; margin: 0 auto; padding: 0 40px; }
-
-        .text-gradient {
-            background: var(--btn-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        }
-
-        .btn-primary {
-            background: var(--btn-gradient); color: white; border: none;
-            padding: 16px 32px; border-radius: 12px; font-weight: 600; font-size: 16px; cursor: pointer;
-            box-shadow: 0 8px 25px rgba(124,58,237,.45); transition: 0.3s;
-        }
+        .text-gradient { background: var(--btn-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        .btn-primary { background: var(--btn-gradient); color: white; border: none; padding: 16px 32px; border-radius: 12px; font-weight: 600; font-size: 16px; cursor: pointer; box-shadow: 0 8px 25px rgba(124,58,237,.45); transition: 0.3s; }
         .btn-primary:hover { opacity: 0.9; transform: translateY(-2px); }
-
-        /* Top Carousel */
-        .top-carousel { width: 100%; overflow: hidden; background: rgba(0,0,0,0.2); padding: 12px 0; border-bottom: 1px solid var(--border-color); display: flex; }
-        .carousel-track { display: flex; gap: 20px; animation: scroll 30s linear infinite; white-space: nowrap; }
-        .carousel-item { background: rgba(255,255,255,0.05); padding: 8px 20px; border-radius: 20px; border: 1px solid var(--border-color); font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-        @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-
-        /* Navbar */
-        nav { position: sticky; top: 0; z-index: 50; height: 82px; display: flex; justify-content: space-between; align-items: center; padding: 0 40px; border-bottom: 1px solid var(--border-color); background: rgba(5,8,22,0.8); backdrop-filter: blur(10px); }
-        .nav-links { display: flex; align-items: center; gap: 30px; }
-        .nav-links a { color: #D4D7E5; font-weight: 600; transition: color 0.3s; }
-        .nav-links a:hover { color: #fff; }
-        
-        .nav-icons { display: flex; gap: 24px; align-items: center; color: var(--text-light); }
-        .nav-item-icon { display: flex; align-items: center; gap: 6px; font-size: 14px; cursor: pointer; font-weight: 500; position: relative; }
-        .nav-item-icon:hover { color: #fff; }
-        .cart-badge { background: var(--accent-purple); color: white; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 10px; position: absolute; top: -8px; right: -12px; }
-
-        /* Hero Section */
-        .hero { display: flex; align-items: center; min-height: 600px; padding: 80px 0; }
-        .hero-left { flex: 1; max-width: 600px; z-index: 10; }
-        .hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; border-radius: 30px; border: 1px solid rgba(124,58,237,0.3); background: rgba(124,58,237,0.1); font-size: 13px; font-weight: 600; color: #A78BFA; margin-bottom: 24px; }
-        .hero h1 { font-size: 64px; line-height: 1.1; font-weight: 800; margin: 0 0 24px 0; }
-        .hero p { font-size: 17px; color: var(--text-muted); line-height: 1.6; margin-bottom: 40px; }
-        
-        .hero-buttons { display: flex; gap: 16px; margin-bottom: 40px; }
         .btn-secondary { background: transparent; color: white; border: 1px solid var(--border-color); padding: 16px 32px; border-radius: 12px; font-weight: 600; font-size: 16px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.3s; }
         .btn-secondary:hover { background: rgba(255,255,255,0.05); }
 
-        .hero-trust { display: flex; gap: 24px; }
-        .ht-item { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: var(--text-light); }
+        /* Navbar */
+        nav { position: sticky; top: 0; z-index: 50; height: 82px; display: flex; justify-content: space-between; align-items: center; padding: 0 40px; border-bottom: 1px solid var(--border-color); background: rgba(5,8,22,0.8); backdrop-filter: blur(10px); }
+        .nav-links { display: flex; gap: 30px; font-weight: 600; color: #D4D7E5; }
+        .nav-links a:hover { color: white; }
 
-        .hero-right { flex: 1; position: relative; display: flex; justify-content: center; align-items: center; }
-        .hero-circle { width: 450px; height: 450px; border-radius: 50%; border: 1px solid rgba(124,58,237,0.3); position: relative; animation: spin 20s linear infinite; box-shadow: 0 0 100px rgba(124,58,237,0.2); }
-        .hero-icon-float { position: absolute; width: 60px; height: 60px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: bold; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
+        /* Hero */
+        .hero { display: flex; align-items: center; min-height: 600px; padding: 80px 0; }
+        .hero-left { flex: 1; max-width: 600px; }
+        .hero-badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; border-radius: 30px; border: 1px solid rgba(124,58,237,0.3); background: rgba(124,58,237,0.1); font-size: 13px; font-weight: 600; color: #A78BFA; margin-bottom: 24px; }
+        .hero h1 { font-size: 64px; line-height: 1.1; font-weight: 800; margin: 0 0 24px 0; }
+        .hero p { font-size: 17px; color: var(--text-muted); line-height: 1.6; margin-bottom: 40px; }
+        .hero-buttons { display: flex; gap: 16px; margin-bottom: 40px; }
 
-        /* Sections General */
+        /* General Section & Grid */
         .section { padding: 80px 0; }
         .section-header { text-align: center; margin-bottom: 50px; }
         .section-title { font-size: 36px; font-weight: 800; margin: 0 0 12px 0; }
-        .section-subtitle { font-size: 15px; color: var(--text-muted); margin: 0; }
-
-        /* Trust Strip */
-        .trust-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; padding: 40px 0; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); margin-bottom: 40px; }
-        .ts-item { display: flex; align-items: center; justify-content: center; gap: 16px; }
-        .ts-item i { color: var(--accent-purple); width: 32px; height: 32px; }
-        .ts-text h4 { margin: 0 0 4px 0; font-size: 16px; font-weight: 700; }
-        .ts-text p { margin: 0; font-size: 12px; color: var(--text-muted); }
-
-        /* Categories */
-        .cat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
-        .cat-card { border-radius: 24px; padding: 24px; text-align: center; transition: 0.3s; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 200px; cursor: pointer; }
-        .cat-card:hover { transform: translateY(-8px); border-color: rgba(124,58,237,0.5); }
-        .cat-card h3 { font-size: 20px; margin: 0 0 8px 0; }
-        .cat-card p { font-size: 13px; color: var(--accent-purple); font-weight: 600; margin: 0; }
-
-        /* Best Sellers Grid */
-        .bs-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 30px; }
+        
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 24px; }
-        .product-card { border-radius: 20px; padding: 16px; box-shadow: 0 10px 40px rgba(0,0,0,.35); transition: transform 0.4s ease; display: flex; flex-direction: column; }
+        .product-card { border-radius: 20px; padding: 16px; box-shadow: 0 10px 40px rgba(0,0,0,.35); transition: 0.4s; display: flex; flex-direction: column; }
         .product-card:hover { transform: translateY(-8px) scale(1.02); border-color: rgba(124,58,237,.5); }
-        .product-image { width: 100%; height: 160px; object-fit: cover; border-radius: 12px; margin-bottom: 16px; background: #000; }
-        .discount-badge { background: var(--btn-gradient); padding: 4px 8px; border-radius: 8px; font-size: 11px; font-weight: bold; display: inline-block; margin-bottom: 10px; align-self: flex-start; }
-        .product-card h3 { font-size: 18px; margin: 0 0 10px 0; }
-        .price-row { margin-top: auto; padding-top: 15px; }
+        .product-image { width: 100%; height: 160px; object-fit: cover; border-radius: 12px; margin-bottom: 16px; }
+        .discount-badge { background: var(--btn-gradient); padding: 4px 8px; border-radius: 8px; font-size: 11px; font-weight: bold; display: inline-block; margin-bottom: 10px; }
         .price { color: var(--accent-purple); font-weight: 700; font-size: 20px; }
         .old-price { font-size: 13px; text-decoration: line-through; color: var(--text-muted); margin-left: 5px; }
 
-        /* How it works */
-        .hiw-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; text-align: center; }
-        .hiw-item { display: flex; flex-direction: column; align-items: center; }
-        .hiw-icon { width: 80px; height: 80px; border-radius: 50%; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); display: flex; justify-content: center; align-items: center; margin-bottom: 20px; color: var(--text-light); }
-        .hiw-item h4 { font-size: 20px; margin: 0 0 10px 0; }
-        .hiw-item p { font-size: 14px; color: var(--text-muted); margin: 0; }
-
-        /* Reviews */
-        .review-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-        .review-card { padding: 24px; border-radius: 20px; }
-        .stars { color: #F59E0B; margin-bottom: 16px; display: flex; gap: 4px; }
-        .review-card p { font-size: 15px; line-height: 1.6; margin-bottom: 24px; }
-        .reviewer { display: flex; align-items: center; gap: 12px; }
-        .rev-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--border-color); }
-        .rev-name h5 { margin: 0; font-size: 14px; }
-        .rev-name span { font-size: 12px; color: var(--accent-green); display: flex; align-items: center; gap: 4px; }
-
-        /* Footer Banner */
-        .footer-banner { background: linear-gradient(90deg, rgba(124,58,237,0.2), rgba(37,99,235,0.2)); border: 1px solid var(--accent-purple); border-radius: 24px; padding: 40px; display: flex; justify-content: space-between; align-items: center; margin: 80px 0; }
-        .fb-left { display: flex; align-items: center; gap: 24px; }
-        .fb-left h2 { font-size: 28px; margin: 0 0 8px 0; }
-        .fb-left p { margin: 0; color: var(--text-muted); }
-
-        /* Footer */
-        footer { border-top: 1px solid var(--border-color); padding: 60px 0 20px 0; }
-        .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1.5fr; gap: 40px; margin-bottom: 60px; }
-        .footer-col h4 { font-size: 16px; margin: 0 0 20px 0; }
-        .footer-col a { display: block; color: var(--text-muted); margin-bottom: 12px; font-size: 14px; transition: 0.3s; }
-        .footer-col a:hover { color: white; }
-        .footer-bottom { text-align: center; border-top: 1px solid var(--border-color); padding-top: 20px; font-size: 13px; color: var(--text-muted); }
-
-        /* Cart Drawer Slide-over */
-        #cart-drawer { position: fixed; top: 0; right: -400px; width: 380px; height: 100vh; background: #0C1126; border-left: 1px solid var(--border-color); z-index: 1000; box-shadow: -10px 0 40px rgba(0,0,0,0.5); transition: right 0.4s ease; display: flex; flex-direction: column; padding: 24px; }
-        #cart-drawer.open { right: 0; }
-        .cart-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 20px; }
-        .cart-items { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
-        .cart-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 12px; border-radius: 12px; border: 1px solid var(--border-color); }
-        .cart-footer { border-top: 1px solid var(--border-color); padding-top: 20px; margin-top: 20px; }
-        .btn-whatsapp-checkout { background: #22C55E; color: white; border: none; width: 100%; padding: 16px; border-radius: 12px; font-weight: 700; font-size: 16px; cursor: pointer; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 12px; transition: 0.3s; }
-        .btn-whatsapp-checkout:hover { opacity: 0.9; }
-        .backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 999; display: none; }
     </style>
 </head>
 <body>
-
-    <!-- Backdrop for Cart -->
-    <div class="backdrop" id="cart-backdrop" onclick="toggleCart()"></div>
-
-    <!-- Cart Drawer -->
-    <div id="cart-drawer" class="glass">
-        <div class="cart-header">
-            <h3>Your Shopping Cart</h3>
-            <button onclick="toggleCart()" style="background:none; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button>
-        </div>
-        <div class="cart-items" id="cart-items-container">
-            <!-- Cart Items injected here -->
-        </div>
-        <div class="cart-footer">
-            <div style="display: flex; justify-content: space-between; font-size: 18px; font-weight: 700; margin-bottom: 12px;">
-                <span>Total:</span>
-                <span id="cart-total">₹0</span>
-            </div>
-            <button class="btn-whatsapp-checkout" onclick="checkoutWhatsApp()">
-                <i data-lucide="message-circle"></i> Checkout via WhatsApp
-            </button>
-        </div>
-    </div>
-
-    <!-- Top Carousel -->
-    <div class="top-carousel">
-        <div class="carousel-track">
-            <div class="carousel-item">🎬 Netflix Premium - Up to 80% Off</div>
-            <div class="carousel-item">📦 Prime Video - Up to 70% Off</div>
-            <div class="carousel-item">🤖 ChatGPT Plus - 50% Off</div>
-            <div class="carousel-item">🎨 Canva Pro - Lifetime Access</div>
-            <div class="carousel-item">💼 LinkedIn Premium - Boost Career</div>
-            <div class="carousel-item">🎬 Netflix Premium - Up to 80% Off</div>
-            <div class="carousel-item">📦 Prime Video - Up to 70% Off</div>
-            <div class="carousel-item">🤖 ChatGPT Plus - 50% Off</div>
-            <div class="carousel-item">🎨 Canva Pro - Lifetime Access</div>
-            <div class="carousel-item">💼 LinkedIn Premium - Boost Career</div>
-        </div>
-    </div>
-
-    <!-- Navbar -->
     <nav class="glass">
         <div style="font-size: 24px; font-weight: 800;"><a href="index.html">PremiumStore</a></div>
         <div class="nav-links">
             <a href="index.html">Home</a>
-            <a href="shop.html">All Products</a>
-            <a href="shop.html?category=ott">OTT</a>
-            <a href="shop.html?category=ai">AI Tools</a>
-            <a href="shop.html?category=bundles">Combo Offers</a>
-            <a href="#">Support</a>
-        </div>
-        <div class="nav-icons">
-            <div class="nav-item-icon" onclick="toggleCart()">
-                <i data-lucide="shopping-cart" style="width:20px;"></i> Cart
-                <span class="cart-badge" id="cart-count">0</span>
-            </div>
-            <div class="nav-item-icon" onclick="window.location.href='admin.html'"><i data-lucide="user" style="width:20px;"></i> Admin / Login</div>
+            <a href="shop.html">Shop</a>
+            <a href="admin.html">Admin</a>
         </div>
     </nav>
 
     <div class="container">
-        <!-- Hero Section -->
         <section class="hero">
             <div class="hero-left">
-                <div class="hero-badge">
-                    <i data-lucide="check-circle-2" style="width:16px;"></i> 100% Genuine Activation
-                </div>
+                <div class="hero-badge"><i data-lucide="check-circle-2" style="width:16px;"></i> 100% Genuine Activation</div>
                 <h1>Premium Subscriptions<br>Up to <span class="text-gradient">99% Off</span></h1>
                 <p>OTT, AI Tools & Social Media Subscriptions. All plans activated on your personal account. Genuine • Secure • Affordable.</p>
-                
                 <div class="hero-buttons">
                     <button class="btn-primary" onclick="window.location.href='shop.html'">Shop Now</button>
-                    <button class="btn-secondary" onclick="window.open('https://wa.me/919967566736?text=Hi%20PremiumStore!', '_blank')">
-                        <i data-lucide="message-circle" style="width:18px;"></i> Join WhatsApp
-                    </button>
-                </div>
-
-                <div class="hero-trust">
-                    <div class="ht-item"><i data-lucide="shield-check" style="color:var(--accent-green); width:18px;"></i> Secure Activation</div>
-                    <div class="ht-item"><i data-lucide="zap" style="color:#F59E0B; width:18px;"></i> Instant Delivery</div>
-                    <div class="ht-item"><i data-lucide="headphones" style="color:var(--accent-blue); width:18px;"></i> 24/7 Support</div>
+                    <button class="btn-secondary" onclick="window.open('https://wa.me/919967566736?text=Hi%20PremiumStore!', '_blank')"><i data-lucide="message-circle" style="width:18px;"></i> WhatsApp</button>
                 </div>
             </div>
-
-            <div class="hero-right">
-                <div class="hero-circle">
-                    <div class="hero-icon-float" style="top: -20px; left: 50%;"><i data-lucide="play" style="color: #EF4444;"></i></div>
-                    <div class="hero-icon-float" style="bottom: 20px; left: 10%;"><i data-lucide="bot" style="color: #22C55E;"></i></div>
-                    <div class="hero-icon-float" style="top: 40%; right: -30px;"><i data-lucide="image" style="color: #3B82F6;"></i></div>
-                    <div class="hero-icon-float" style="bottom: 10%; right: 20%;"><i data-lucide="music" style="color: #F59E0B;"></i></div>
-                </div>
+            <div style="flex: 1; display: flex; justify-content: center;">
+                <div style="width: 400px; height: 400px; border-radius: 50%; border: 1px solid rgba(124,58,237,0.3); box-shadow: 0 0 100px rgba(124,58,237,0.2);"></div>
             </div>
         </section>
 
-        <!-- Trust Strip -->
-        <div class="trust-strip">
-            <div class="ts-item"><i data-lucide="shield"></i><div class="ts-text"><h4>100% Genuine</h4><p>Activation on Personal Account</p></div></div>
-            <div class="ts-item"><i data-lucide="lock"></i><div class="ts-text"><h4>Secure Payment</h4><p>100% Safe & Protected</p></div></div>
-            <div class="ts-item"><i data-lucide="tag"></i><div class="ts-text"><h4>Lowest Price</h4><p>Upto 99% Off Market Price</p></div></div>
-            <div class="ts-item"><i data-lucide="headphones"></i><div class="ts-text"><h4>24/7 Support</h4><p>Always Here to Help</p></div></div>
-        </div>
-
-        <!-- Categories -->
         <section class="section">
             <div class="section-header">
-                <h2 class="section-title">Choose Your Category</h2>
-                <p class="section-subtitle">Explore top subscriptions in your favorite category</p>
-            </div>
-            <div class="cat-grid">
-                <div class="cat-card glass" onclick="window.location.href='shop.html?category=ott'">
-                    <i data-lucide="tv" style="width:48px; height:48px; margin-bottom:16px; color:white;"></i>
-                    <h3>OTT Platforms</h3><p>Up to 80% Off</p>
-                </div>
-                <div class="cat-card glass" onclick="window.location.href='shop.html?category=ai'">
-                    <i data-lucide="bot" style="width:48px; height:48px; margin-bottom:16px; color:white;"></i>
-                    <h3>AI Tools</h3><p>Up to 70% Off</p>
-                </div>
-                <div class="cat-card glass" onclick="window.location.href='shop.html?category=social'">
-                    <i data-lucide="share-2" style="width:48px; height:48px; margin-bottom:16px; color:white;"></i>
-                    <h3>Social Media</h3><p>Up to 70% Off</p>
-                </div>
-                <div class="cat-card glass" onclick="window.location.href='shop.html?category=bundles'">
-                    <i data-lucide="package" style="width:48px; height:48px; margin-bottom:16px; color:white;"></i>
-                    <h3>Combo Offers</h3><p>Up to 90% Off</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Best Sellers -->
-        <section class="section">
-            <div class="bs-header">
-                <div>
-                    <h2 class="section-title" style="margin-bottom:0;">Best Sellers</h2>
-                    <p class="section-subtitle" style="margin-top:8px;">Most popular subscriptions with massive discounts</p>
-                </div>
-                <button class="btn-secondary" style="padding: 10px 20px;" onclick="window.location.href='shop.html'">View All Products</button>
+                <h2 class="section-title">Best Sellers</h2>
+                <p style="color: var(--text-muted);">Most popular subscriptions with massive discounts</p>
             </div>
             <div class="product-grid" id="best-sellers-container"></div>
         </section>
-
-        <!-- How It Works -->
-        <section class="section">
-            <div class="section-header">
-                <h2 class="section-title">How It Works</h2>
-                <p class="section-subtitle">Get your favorite subscription in 3 simple steps</p>
-            </div>
-            <div class="hiw-grid">
-                <div class="hiw-item"><div class="hiw-icon"><i data-lucide="mouse-pointer-click" style="width:32px; height:32px;"></i></div><h4>Choose a Plan</h4><p>Select your favorite subscription</p></div>
-                <div class="hiw-item"><div class="hiw-icon"><i data-lucide="credit-card" style="width:32px; height:32px;"></i></div><h4>Make Payment</h4><p>Secure payment & instant processing</p></div>
-                <div class="hiw-item"><div class="hiw-icon"><i data-lucide="check-circle" style="width:32px; height:32px;"></i></div><h4>Get Activated</h4><p>Activated on your personal account</p></div>
-            </div>
-        </section>
-
-        <!-- Reviews -->
-        <section class="section">
-            <div class="section-header">
-                <h2 class="section-title">What Our Customers Say</h2>
-                <p class="section-subtitle">Real reviews from our happy customers</p>
-            </div>
-            <div class="review-grid">
-                <div class="review-card glass">
-                    <div class="stars"><i data-lucide="star" style="fill: currentColor; width:16px;"></i><i data-lucide="star" style="fill: currentColor; width:16px;"></i><i data-lucide="star" style="fill: currentColor; width:16px;"></i><i data-lucide="star" style="fill: currentColor; width:16px;"></i><i data-lucide="star" style="fill: currentColor; width:16px;"></i></div>
-                    <p>"Got Netflix Premium at just ₹199! Works perfectly on my account. Super fast delivery."</p>
-                    <div class="reviewer"><div class="rev-avatar"></div><div class="rev-name"><h5>Rahul Sharma</h5><span><i data-lucide="check-circle" style="width:12px;"></i> Verified Customer</span></div></div>
-                </div>
-                <div class="review-card glass">
-                    <div class="stars"><i data-lucide="star" style="fill: currentColor; width:16px;"></i><i data-lucide="star" style="fill: currentColor; width:16px;"></i><i data-lucide="star" style="fill: currentColor; width:16px;"></i><i data-lucide="star" style="fill: currentColor; width:16px;"></i><i data-lucide="star" style="fill: currentColor; width:16px;"></i></div>
-                    <p>"ChatGPT Plus activation was instant. Best price I found online. Highly recommended!"</p>
-                    <div class="reviewer"><div class="rev-avatar"></div><div class="rev-name"><h5>Priya Singh</h5><span><i data-lucide="check-circle" style="width:12px;"></i> Verified Customer</span></div></div>
-                </div>
-                <div class="review-card glass">
-                    <div class="stars"><i data-lucide="star" style="fill: currentColor; width:16px;"></i><i data-lucide="star" style="fill: currentColor; width:16px;"></i><i data-lucide="star" style="fill: currentColor; width:16px;"></i><i data-lucide="star" style="fill: currentColor; width:16px;"></i><i data-lucide="star" style="fill: currentColor; width:16px;"></i></div>
-                    <p>"Using Prime Video and Disney+ Hotstar combo. Everything works flawlessly!"</p>
-                    <div class="reviewer"><div class="rev-avatar"></div><div class="rev-name"><h5>Amit Patel</h5><span><i data-lucide="check-circle" style="width:12px;"></i> Verified Customer</span></div></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Footer Banner -->
-        <div class="footer-banner glass">
-            <div class="fb-left">
-                <i data-lucide="shield-check" style="width:64px; height:64px; color:var(--accent-purple);"></i>
-                <div><h2>All Activations 100% Genuine</h2><p>Activated on your personal account using official methods</p></div>
-            </div>
-            <button class="btn-primary" onclick="window.location.href='shop.html'">Shop Now & Save Big</button>
-        </div>
-
-        <footer>
-            <div class="footer-grid">
-                <div class="footer-col"><h3 style="font-weight: 800;">PremiumStore</h3><p style="color:var(--text-muted); font-size:13px;">Your one-stop destination for OTT, AI Tools & Social Media subscriptions.</p></div>
-                <div class="footer-col"><h4>Quick Links</h4><a href="index.html">Home</a><a href="shop.html">All Products</a></div>
-                <div class="footer-col"><h4>Support</h4><a href="#">FAQ</a><a href="#">Refund Policy</a></div>
-                <div class="footer-col"><h4>Contact</h4><a href="https://wa.me/919967566736" target="_blank">WhatsApp: 9967566736</a></div>
-                <div class="footer-col"><h4>Secure Payments</h4><span style="color:var(--accent-green); font-size:12px;"><i data-lucide="lock" style="width:12px;"></i> 100% Secure</span></div>
-            </div>
-            <div class="footer-bottom">&copy; 2026 PremiumStore. All rights reserved.</div>
-        </footer>
     </div>
 
     <script>
         lucide.createIcons();
+        const db = supabase.createClient('https://ognjizizksfapgnnwgld.supabase.co', 'sb_publishable_O6_YMG5VN9PNyRUAkLn-vg_WWfPeJEb');
 
-        const SUPABASE_URL = 'https://ognjizizksfapgnnwgld.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_O6_YMG5VN9PNyRUAkLn-vg_WWfPeJEb';
-        const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        // --- Cart State Management ---
-        function getCart() {
-            return JSON.parse(localStorage.getItem('ps_cart') || '[]');
-        }
-
-        function saveCart(cart) {
-            localStorage.setItem('ps_cart', JSON.stringify(cart));
-            updateCartUI();
-        }
-
-        function addToCart(id, title, price) {
-            let cart = getCart();
-            let item = cart.find(i => i.id === id);
-            if(item) {
-                item.qty += 1;
-            } else {
-                cart.push({ id, title, price, qty: 1 });
-            }
-            saveCart(cart);
-            toggleCart();
-        }
-
-        function removeFromCart(id) {
-            let cart = getCart().filter(i => i.id !== id);
-            saveCart(cart);
-        }
-
-        function updateCartUI() {
-            const cart = getCart();
-            const count = cart.reduce((sum, i) => sum + i.qty, 0);
-            document.getElementById('cart-count').innerText = count;
-
-            const container = document.getElementById('cart-items-container');
-            container.innerHTML = '';
-
-            if(cart.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:var(--text-muted); margin-top:40px;">Your cart is empty.</p>';
-                document.getElementById('cart-total').innerText = '₹0';
-                return;
-            }
-
-            let total = 0;
-            cart.forEach(item => {
-                total += (item.price * item.qty);
-                container.innerHTML += `
-                    <div class="cart-item">
-                        <div>
-                            <div style="font-weight:600; font-size:14px;">${item.title}</div>
-                            <div style="font-size:12px; color:var(--text-muted);">₹${item.price} × ${item.qty}</div>
-                        </div>
-                        <button onclick="removeFromCart('${item.id}')" style="background:none; border:none; color:#EF4444; cursor:pointer; font-size:14px;">Remove</button>
-                    </div>
-                `;
-            });
-            document.getElementById('cart-total').innerText = `₹${total}`;
-        }
-
-        function toggleCart() {
-            document.getElementById('cart-drawer').classList.toggle('open');
-            document.getElementById('cart-backdrop').style.display = document.getElementById('cart-drawer').classList.contains('open') ? 'block' : 'none';
-        }
-
-        function checkoutWhatsApp() {
-            const cart = getCart();
-            if(cart.length === 0) {
-                alert('Your cart is empty!');
-                return;
-            }
-
-            let msg = "Hi PremiumStore! I want to place an order for the following items:\n\n";
-            let total = 0;
-            cart.forEach((item, index) => {
-                msg += `${index + 1}. *${item.title}* - ₹${item.price} x ${item.qty} = ₹${item.price * item.qty}\n`;
-                total += (item.price * item.qty);
-            });
-            msg += `\n*Total Amount: ₹${total}*\nPlease help me proceed with the payment.`;
-
-            const phone = "919967566736";
-            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
-        }
-
-        // Fetch Best Sellers
         async function fetchBestSellers() {
             const container = document.getElementById('best-sellers-container');
             const { data, error } = await db.from('products').select('*').order('created_at', { ascending: false }).limit(6);
-
-            if (error || !data) {
-                container.innerHTML = '<p style="color:var(--text-muted); text-align:center; grid-column:1/-1;">No products found.</p>';
-                return;
-            }
+            if (error) return;
 
             container.innerHTML = '';
             data.forEach(product => {
                 const img = product.image_url || 'https://via.placeholder.com/300x200';
                 container.innerHTML += `
-                    <div class="product-card glass">
-                        <a href="product.html?id=${product.id}">
-                            <img src="${img}" class="product-image">
-                            ${product.discount_percentage ? `<div class="discount-badge">${product.discount_percentage}% OFF</div>` : ''}
-                            <h3>${product.title}</h3>
-                            <div style="font-size: 12px; color: var(--text-muted);">${product.validity || ''} • ${product.delivery_time || ''}</div>
-                        </a>
-                        <div class="price-row">
+                    <div class="product-card glass" onclick="window.location.href='product.html?id=${product.id}'" style="cursor:pointer;">
+                        <img src="${img}" class="product-image">
+                        ${product.discount_percentage ? `<div class="discount-badge">${product.discount_percentage}% OFF</div>` : ''}
+                        <h3 style="margin: 0 0 10px 0; font-size:18px;">${product.title}</h3>
+                        <div style="margin-top:auto; padding-top:15px;">
                             <div class="price">₹${product.price} <span class="old-price">₹${product.old_price || ''}</span></div>
-                            <button class="btn-primary" style="width:100%; margin-top:12px; padding:10px; font-size:14px;" onclick="addToCart('${product.id}', '${product.title}', ${product.price})">Add to Cart</button>
                         </div>
                     </div>
                 `;
             });
         }
-
-        updateCartUI();
         fetchBestSellers();
     </script>
 </body>
