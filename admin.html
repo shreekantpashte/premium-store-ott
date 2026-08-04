@@ -144,7 +144,7 @@
             </div>
             <div class="nav-footer">
                 <a href="index.html" target="_blank" class="nav-item">View Store ↗</a>
-                <a class="nav-item logout" onclick="handleLogout()">Sign Out</a>
+                <a class="nav-item logout" onclick="handleLogout()" style="cursor: pointer;">Sign Out</a>
             </div>
         </aside>
 
@@ -341,11 +341,13 @@ If your account or subscription doesn't work as expected:
         // --- SUPABASE CONFIGURATION ---
         const SUPABASE_URL = 'https://ognjizizksfapgnnwgld.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_O6_YMG5VN9PNyRUAkLn-vg_WWfPeJEb';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // Renamed variable from 'supabase' to 'db' to fix the naming collision error
+        const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // --- AUTHENTICATION LOGIC ---
         async function checkSession() {
-            const { data: { session } } = await supabase.auth.getSession();
+            const { data: { session } } = await db.auth.getSession();
             if (session) {
                 document.getElementById('auth-view').style.display = 'none';
                 document.getElementById('app-view').style.display = 'flex';
@@ -366,7 +368,7 @@ If your account or subscription doesn't work as expected:
             btn.innerText = 'Signing In...';
             errorMsg.style.display = 'none';
 
-            const { error } = await supabase.auth.signInWithPassword({ email, password });
+            const { error } = await db.auth.signInWithPassword({ email, password });
 
             if (error) {
                 errorMsg.innerText = error.message;
@@ -379,7 +381,7 @@ If your account or subscription doesn't work as expected:
         }
 
         async function handleLogout() {
-            await supabase.auth.signOut();
+            await db.auth.signOut();
             window.location.reload();
         }
 
@@ -403,7 +405,7 @@ If your account or subscription doesn't work as expected:
 
         // --- DATA FETCHING & RENDERING ---
         async function loadDashboardData() {
-            const { data, error } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+            const { data, error } = await db.from('products').select('*').order('created_at', { ascending: false });
             if (error) return console.error(error);
 
             document.getElementById('stat-total').innerText = data.length;
@@ -471,10 +473,10 @@ If your account or subscription doesn't work as expected:
                 const fileName = `${Date.now()}.${fileExt}`;
 
                 // Upload image
-                const { error: uploadError } = await supabase.storage.from('product-images').upload(`public/${fileName}`, file);
+                const { error: uploadError } = await db.storage.from('product-images').upload(`public/${fileName}`, file);
                 if (uploadError) throw uploadError;
 
-                const { data: publicUrlData } = supabase.storage.from('product-images').getPublicUrl(`public/${fileName}`);
+                const { data: publicUrlData } = db.storage.from('product-images').getPublicUrl(`public/${fileName}`);
                 const imageUrl = publicUrlData.publicUrl;
 
                 // Prepare Data
@@ -486,7 +488,7 @@ If your account or subscription doesn't work as expected:
                 const trust = document.getElementById('trust_factors').value.split(',').map(i => i.trim()).filter(i => i);
 
                 // Insert to DB
-                const { error: dbError } = await supabase.from('products').insert([{
+                const { error: dbError } = await db.from('products').insert([{
                     title: document.getElementById('title').value,
                     category: document.getElementById('category').value,
                     validity: document.getElementById('validity').value,
@@ -516,7 +518,7 @@ If your account or subscription doesn't work as expected:
 
         async function deleteProduct(id) {
             if(confirm("Are you sure you want to delete this product?")) {
-                await supabase.from('products').delete().eq('id', id);
+                await db.from('products').delete().eq('id', id);
                 loadDashboardData();
             }
         }
